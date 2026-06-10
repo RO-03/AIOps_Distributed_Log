@@ -1,21 +1,19 @@
 # docker/spark/Dockerfile
-# Uses official Apache Spark image (bitnami moved off Docker Hub)
+# apache/spark:3.5.0 ships Python 3.8 — all pins are py38-compatible
 FROM apache/spark:3.5.0
 
 USER root
 
-# Install Python deps
 RUN pip install --no-cache-dir \
     delta-spark==3.0.0 \
     kafka-python==2.0.2 \
     boto3==1.34.0 \
-    scikit-learn==1.4.0 \
-    pandas==2.1.4 \
-    numpy==1.26.3 \
-    pyarrow==14.0.2 \
+    scikit-learn==1.3.2 \
+    pandas==2.0.3 \
+    numpy==1.24.4 \
+    pyarrow==12.0.1 \
     prometheus-client==0.19.0
 
-# Download S3A + Delta JARs
 ENV SPARK_JARS_DIR=/opt/spark/jars
 
 RUN curl -sL -o ${SPARK_JARS_DIR}/hadoop-aws-3.3.4.jar \
