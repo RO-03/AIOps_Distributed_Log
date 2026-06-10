@@ -1,0 +1,16 @@
+# config/grafana/provisioning/dashboards/dashboards.yml
+# Phase 4 / Step 4.4 — Grafana Dashboard Provisioning
+# Grafana auto-loads all JSON dashboards from /etc/grafana/provisioning/dashboards/
+
+apiVersion: 1
+
+providers:
+  - name: AIOps Dashboards
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

@@ -79,10 +79,11 @@ ANOMALY_ALERTS_SCHEMA = StructType([
     StructField("acknowledged",       BooleanType(),   nullable=True),
 ])
 
+# Spec Step 1.3: MinIO bucket name = telemetry-lakehouse
 TABLES = {
-    "raw_logs":       ("s3a://aiops-lakehouse/raw_logs",       RAW_LOGS_SCHEMA,       "timestamp"),
-    "processed_logs": ("s3a://aiops-lakehouse/processed_logs", PROCESSED_LOGS_SCHEMA, "timestamp"),
-    "anomaly_alerts": ("s3a://aiops-lakehouse/anomaly_alerts", ANOMALY_ALERTS_SCHEMA, "triggered_at"),
+    "raw_logs":       ("s3a://telemetry-lakehouse/raw_logs",       RAW_LOGS_SCHEMA,       "timestamp"),
+    "processed_logs": ("s3a://telemetry-lakehouse/processed_logs", PROCESSED_LOGS_SCHEMA, "timestamp"),
+    "anomaly_alerts": ("s3a://telemetry-lakehouse/anomaly_alerts", ANOMALY_ALERTS_SCHEMA, "triggered_at"),
 }
 
 
@@ -96,7 +97,7 @@ def build_spark(master: str) -> SparkSession:
         .appName("AIOps-LakehouseInit")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-oss:9000")
         .config("spark.hadoop.fs.s3a.access.key", "aiops_admin")
         .config("spark.hadoop.fs.s3a.secret.key", "aiops_secret_2024")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
@@ -146,7 +147,7 @@ def verify_table(spark: SparkSession, name: str, path: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Initialize AIOps Delta Lake schema")
-    parser.add_argument("--master", default="spark://spark-master:7077", help="Spark master URL")
+    parser.add_argument("--master", default="spark://spark-master:7077", help="Spark master URL (container: spark-master:7077)")
     args = parser.parse_args()
 
     spark = build_spark(args.master)
@@ -173,6 +174,7 @@ def main():
 
     log.info("═" * 60)
     log.info("✅ All Delta tables initialized successfully.")
+    log.info("   Bucket        → s3a://telemetry-lakehouse/")
     log.info("   MinIO console → http://localhost:9001")
     log.info("   Spark UI       → http://localhost:8081")
     log.info("═" * 60)

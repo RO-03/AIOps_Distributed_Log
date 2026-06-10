@@ -1,0 +1,42 @@
+# config/grafana/provisioning/datasources/datasources.yml
+# Phase 4 / Step 4.4 — Grafana Data Source Provisioning
+#
+# Per the spec (Step 4.4), Grafana uses PostgreSQL as the primary data source
+# for historical charts (error trends, failure frequency, component heatmaps).
+#
+# The Prometheus datasource is retained as secondary for container-level metrics.
+
+apiVersion: 1
+
+datasources:
+  # ── Primary: PostgreSQL Analytics Database ───────────────────────────────────
+  # Source of truth for all Grafana dashboards (failure_counts, component_health,
+  # rolling_error_freq, alert_summaries tables)
+  - name: PostgreSQL
+    type: postgres
+    uid: aiops-postgres
+    url: postgres-db:5432
+    user: aiops_user
+    secureJsonData:
+      password: aiops_pg_2024
+    jsonData:
+      database: aiops_analytics
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      postgresVersion: 1600        # PostgreSQL 16
+      timescaledb: false
+    isDefault: true
+    editable: false
+
+  # ── Secondary: Prometheus (container & infrastructure metrics) ───────────────
+  - name: Prometheus
+    type: prometheus
+    uid: aiops-prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: false
+    editable: true
+    jsonData:
+      timeInterval: 15s
