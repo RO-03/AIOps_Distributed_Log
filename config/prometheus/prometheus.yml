@@ -1,0 +1,29 @@
+# config/prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: aiops-platform
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "minio"
+    metrics_path: /minio/v2/metrics/cluster
+    static_configs:
+      - targets: ["minio:9000"]
+
+  - job_name: "kafka"
+    static_configs:
+      - targets: ["kafka:9101"]
+
+  - job_name: "fastapi-gateway"
+    static_configs:
+      - targets: ["fastapi:8000"]
+    metrics_path: /metrics
+
+  - job_name: "spark-master"
+    static_configs:
+      - targets: ["spark-master:4040"]
