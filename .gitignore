@@ -1,0 +1,55 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Data and logs directories - keep directory structure but ignore files
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/models/*
+!data/models/.gitkeep
+data/checkpoints/*
+!data/checkpoints/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# General large / generated files
+*.csv
+*.parquet
+*.jsonl
+*.log
+*.zip
+*.tar.gz
+*.tgz
+*.gz
+*.rar
+*.7z
+*.pkl
+*.h5
+*.pth
+*.pt
+*.onnx
+*.model
+*.joblib
+
+# Spark / Hadoop temp/work directories
+spark-warehouse/
+metastore_db/
+derby.log
