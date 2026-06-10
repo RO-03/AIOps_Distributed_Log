@@ -1,8 +1,10 @@
 # docker/spark/Dockerfile
-FROM bitnami/spark:3.5
+# Uses official Apache Spark image (bitnami moved off Docker Hub)
+FROM apache/spark:3.5.0
 
 USER root
 
+# Install Python deps
 RUN pip install --no-cache-dir \
     delta-spark==3.0.0 \
     kafka-python==2.0.2 \
@@ -13,7 +15,8 @@ RUN pip install --no-cache-dir \
     pyarrow==14.0.2 \
     prometheus-client==0.19.0
 
-ENV SPARK_JARS_DIR=/opt/bitnami/spark/jars
+# Download S3A + Delta JARs
+ENV SPARK_JARS_DIR=/opt/spark/jars
 
 RUN curl -sL -o ${SPARK_JARS_DIR}/hadoop-aws-3.3.4.jar \
     https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar && \
@@ -24,6 +27,6 @@ RUN curl -sL -o ${SPARK_JARS_DIR}/hadoop-aws-3.3.4.jar \
     curl -sL -o ${SPARK_JARS_DIR}/delta-storage-3.0.0.jar \
     https://repo1.maven.org/maven2/io/delta/delta-storage/3.0.0/delta-storage-3.0.0.jar
 
-COPY spark-defaults.conf /opt/bitnami/spark/conf/spark-defaults.conf
+COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 
-USER 1001
+USER spark

@@ -35,7 +35,6 @@ services:
         condition: service_healthy
     ports:
       - "9092:9092"
-      - "9101:9101"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
@@ -45,8 +44,6 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 24
-      KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: kafka
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:
@@ -103,7 +100,7 @@ services:
         mc mb --ignore-existing local/aiops-lakehouse &&
         mc mb --ignore-existing local/aiops-checkpoints &&
         mc mb --ignore-existing local/aiops-models &&
-        echo 'Buckets initialized successfully'
+        echo 'Buckets initialized'
       "
     restart: on-failure
 
@@ -117,12 +114,10 @@ services:
       - "8081:8080"
       - "7077:7077"
     environment:
-      SPARK_MODE: master
-      SPARK_MASTER_HOST: spark-master
-      SPARK_MASTER_PORT: 7077
-      SPARK_MASTER_WEBUI_PORT: 8080
+      SPARK_NO_DAEMONIZE: "true"
       AWS_ACCESS_KEY_ID: aiops_admin
       AWS_SECRET_ACCESS_KEY: aiops_secret_2024
+    command: [ "/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 15s
@@ -141,13 +136,10 @@ services:
     ports:
       - "8082:8081"
     environment:
-      SPARK_MODE: worker
-      SPARK_MASTER_URL: spark://spark-master:7077
-      SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 2G
-      SPARK_WORKER_WEBUI_PORT: 8081
+      SPARK_NO_DAEMONIZE: "true"
       AWS_ACCESS_KEY_ID: aiops_admin
       AWS_SECRET_ACCESS_KEY: aiops_secret_2024
+    command: [ "/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077" ]
 
   spark-worker-2:
     build:
@@ -161,13 +153,10 @@ services:
     ports:
       - "8083:8081"
     environment:
-      SPARK_MODE: worker
-      SPARK_MASTER_URL: spark://spark-master:7077
-      SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 2G
-      SPARK_WORKER_WEBUI_PORT: 8081
+      SPARK_NO_DAEMONIZE: "true"
       AWS_ACCESS_KEY_ID: aiops_admin
       AWS_SECRET_ACCESS_KEY: aiops_secret_2024
+    command: [ "/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077" ]
 
   prometheus:
     image: prom/prometheus:v2.48.0
