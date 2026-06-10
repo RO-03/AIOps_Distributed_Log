@@ -48,7 +48,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093"
-      CLUSTER_ID: "AIOpsKRaftCluster001"
+      CLUSTER_ID: "LelM2dIFQkiUFvXCEcqRWA"
       # Listeners
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,INTERNAL://0.0.0.0:29092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092,INTERNAL://kafka-1:29092"
@@ -88,7 +88,7 @@ services:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093"
-      CLUSTER_ID: "AIOpsKRaftCluster001"
+      CLUSTER_ID: "LelM2dIFQkiUFvXCEcqRWA"
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,INTERNAL://0.0.0.0:29092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9094,INTERNAL://kafka-2:29092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT"
@@ -124,7 +124,7 @@ services:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093"
-      CLUSTER_ID: "AIOpsKRaftCluster001"
+      CLUSTER_ID: "LelM2dIFQkiUFvXCEcqRWA"
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,INTERNAL://0.0.0.0:29092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9096,INTERNAL://kafka-3:29092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT"
@@ -163,16 +163,8 @@ services:
       /bin/sh -c "
         echo 'Waiting for Kafka cluster...' &&
         sleep 5 &&
-        kafka-topics --bootstrap-server kafka-1:29092 --create --if-not-exists
-          --topic system-logs
-          --partitions 3
-          --replication-factor 3
-          --config retention.ms=86400000 &&
-        kafka-topics --bootstrap-server kafka-1:29092 --create --if-not-exists
-          --topic critical-alerts
-          --partitions 1
-          --replication-factor 3
-          --config retention.ms=604800000 &&
+        kafka-topics --bootstrap-server kafka-1:29092 --create --if-not-exists --topic system-logs --partitions 3 --replication-factor 3 --config retention.ms=86400000 &&
+        kafka-topics --bootstrap-server kafka-1:29092 --create --if-not-exists --topic critical-alerts --partitions 1 --replication-factor 3 --config retention.ms=604800000 &&
         echo 'Topics created:' &&
         kafka-topics --bootstrap-server kafka-1:29092 --list
       "
@@ -203,8 +195,8 @@ services:
   # ── Fluentd Aggregator (Phase 2) ─────────────────────────────────────────────
   fluentd-agent:
     build:
-      context: ./docker/fluentd
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/fluentd/Dockerfile
     container_name: fluentd-agent
     hostname: fluentd-agent
     networks:
@@ -334,8 +326,8 @@ services:
   # ── FastAPI Async Gateway (Serving Layer) ─────────────────────────────────────
   fastapi-server:
     build:
-      context: ./docker/fastapi
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/fastapi/Dockerfile
     container_name: fastapi-server
     hostname: fastapi-server
     networks:
