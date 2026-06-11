@@ -98,17 +98,14 @@ def create_topics(bootstrap: str) -> bool:
             )
         )
 
-    results = admin.create_topics(new_topics=new_topics, validate_only=False)
-    all_ok = True
-    for topic, future in results.items():
-        try:
-            future.result()
-            log.info("✅ Created topic: %s", topic)
-        except TopicAlreadyExistsError:
-            log.info("   Topic already exists (skipped): %s", topic)
-        except Exception as exc:
-            log.error("❌ Failed to create topic %s: %s", topic, exc)
-            all_ok = False
+    try:
+        admin.create_topics(new_topics=new_topics, validate_only=False)
+        log.info("✅ Topics creation request succeeded")
+    except TopicAlreadyExistsError:
+        log.info("   Some or all topics already exist (skipped)")
+    except Exception as exc:
+        log.error("❌ Failed to create topics: %s", exc)
+        all_ok = False
 
     # Verify topics
     existing = admin.list_topics()

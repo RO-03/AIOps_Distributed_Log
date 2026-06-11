@@ -150,8 +150,15 @@ def main():
     parser.add_argument("--master", default="spark://spark-master:7077", help="Spark master URL (container: spark-master:7077)")
     args = parser.parse_args()
 
-    spark = build_spark(args.master)
-    spark.sparkContext.setLogLevel("WARN")
+    try:
+        spark = build_spark(args.master)
+        spark.sparkContext.setLogLevel("WARN")
+    except Exception as e:
+        if "JAVA_GATEWAY_EXITED" in str(e) or "Java gateway" in str(e):
+            log.error("Java is missing locally! Run this script via Docker instead:")
+            log.error("    docker exec spark-master python /app/scripts/init_lakehouse.py")
+            sys.exit(1)
+        raise
 
     log.info("═" * 60)
     log.info("AIOps Lakehouse Initialization — Phase 1")

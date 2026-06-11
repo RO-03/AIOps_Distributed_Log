@@ -65,6 +65,8 @@ services:
       # Retention
       KAFKA_LOG_RETENTION_HOURS: 24
       KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_MESSAGE_MAX_BYTES: 2097152
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2097152
     volumes:
       - kafka1_data:/var/lib/kafka/data
     healthcheck:
@@ -101,6 +103,8 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_MESSAGE_MAX_BYTES: 2097152
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2097152
     volumes:
       - kafka2_data:/var/lib/kafka/data
     healthcheck:
@@ -137,6 +141,8 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_MESSAGE_MAX_BYTES: 2097152
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2097152
     volumes:
       - kafka3_data:/var/lib/kafka/data
     healthcheck:
