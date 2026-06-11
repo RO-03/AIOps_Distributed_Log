@@ -73,6 +73,11 @@ def load_training_data(spark: SparkSession, source: str, input_path: str):
 
     # Ensure message column exists and is not null
     df = df.filter(F.col("message").isNotNull() & (F.length(F.col("message")) > 0))
+    
+    # Drop columns that the ML pipeline will create to avoid "Column already exists" errors
+    # (These columns exist if we are reading from processed_logs)
+    columns_to_drop = ["cluster", "tokens", "raw_features", "tfidf_features", "features", "anomaly_score"]
+    df = df.drop(*columns_to_drop)
     count = df.count()
     log.info("Loaded %d training rows", count)
     if count == 0:

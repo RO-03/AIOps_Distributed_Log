@@ -20,9 +20,17 @@ log = logging.getLogger("submit_spark_job")
 CONTAINER = "spark-master"
 APP_DIR   = "/app"
 
-# Kafka Spark SQL connector (must match spark 3.5 + scala 2.12)
-KAFKA_JAR = "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0"
-POSTGRES_JAR = "org.postgresql:postgresql:42.7.1"
+JARS = (
+    "/opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,"
+    "/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,"
+    "/opt/spark/jars/kafka-clients-3.4.1.jar,"
+    "/opt/spark/jars/commons-pool2-2.11.1.jar,"
+    "/opt/spark/jars/postgresql-42.7.1.jar,"
+    "/opt/spark/jars/delta-spark_2.12-3.0.0.jar,"
+    "/opt/spark/jars/delta-storage-3.0.0.jar,"
+    "/opt/spark/jars/hadoop-aws-3.3.4.jar,"
+    "/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar"
+)
 
 JOBS = {
     "stream_processor": {
@@ -57,7 +65,7 @@ def submit(job_name: str, extra_args: list[str]) -> None:
         "docker", "exec", CONTAINER,
         "spark-submit",
         "--master", "spark://spark-master:7077",
-        "--packages", f"{KAFKA_JAR},{POSTGRES_JAR}",
+        "--jars", JARS,
         "--conf", "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension",
         "--conf", "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog",
         "--conf", f"spark.hadoop.fs.s3a.endpoint=http://minio-oss:9000",
