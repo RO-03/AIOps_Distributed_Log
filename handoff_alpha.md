@@ -81,7 +81,12 @@
 | Grafana datasource crash | Only ONE datasource can have `isDefault: true` |
 | `python scripts/init_lakehouse.py` fails | Needs local Java. Run via Docker: `docker exec spark-master python3 /tmp/init_lakehouse.py` |
 | `list[str]` type hints in Python 3.8 Spark container | Use `from typing import List, Optional` instead |
-| PostgreSQL `init.sql` not applied on existing volume | Apply manually: `Get-Content docker/postgres/init.sql \| docker exec -i postgres-db psql -U aiops_user -d aiops_analytics` |
+| PostgreSQL `init.sql` not applied on existing volume | Apply manually in cmd: `type docker\postgres\init.sql | docker exec -i postgres-db psql -U aiops_user -d aiops_analytics` |
+| Delta schema/partition mismatch (`stream_processor.py`) | `init_lakehouse.py` updated to match Spark output exactly, partitioned by `log_date` |
+| PostgreSQL `BatchUpdateException` (`stream_processor.py`) | Used `F.to_date` instead of `F.date_format` so `log_date` is a correct `DATE` type |
+| `UnboundLocalError` in `setup_kafka_topics.py` | Initialized `all_ok = True` variable before execution |
+| Spark `submit_spark_job.py` Ivy cache download fails | Replaced `--packages` with `--jars` to use pre-baked local JARs inside container |
+| `train_model.py` "Column already exists" error | Dropped ML-generated columns (`cluster`, etc.) before fitting KMeans pipeline |
 
 ---
 
@@ -167,7 +172,8 @@ docker-compose up -d
 python scripts/health_check.py --retries 10 --delay 10
 
 # 4. Apply PostgreSQL schema (REQUIRED on first run or after volume reset)
-Get-Content docker/postgres/init.sql | docker exec -i postgres-db psql -U aiops_user -d aiops_analytics
+# Note: Use `Get-Content` if in PowerShell, or `type` if in standard Command Prompt (cmd.exe)
+type docker\postgres\init.sql | docker exec -i postgres-db psql -U aiops_user -d aiops_analytics
 
 # 5. Verify Kafka topics exist (created by kafka-init container automatically)
 python scripts/setup_kafka_topics.py
