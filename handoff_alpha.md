@@ -1,7 +1,7 @@
 # AIOps Distributed Log Diagnostics Platform — Project Handoff
 
-> **Last Updated:** 2026-06-10  
-> **Status:** Phases 0–3 complete and verified working. Phase 4 (FastAPI full implementation + Grafana dashboards) and Phase 5 (Chaos Engineering) are next.
+> **Last Updated:** 2026-06-11  
+> **Status:** Phases 0–4 complete and verified working. Phase 5 (Chaos Engineering) is next.
 
 ---
 
@@ -54,14 +54,24 @@
 - Delta Lake tables initialized: `raw_logs`, `processed_logs`, `anomaly_alerts` (confirmed version=0)
 - Streaming job connects to Spark cluster (`app-20260610145930-0000`), executor on `spark-worker` with 8 cores
 
+### Phase 4 — FastAPI Async Gateway & Grafana Dashboards ✅
+- **FastAPI Backend (`src/api/main.py`)**: fully implemented and running on `:8000`.
+  - `aiokafka` background consumer subscribing to `critical-alerts` topic.
+  - WebSocket alert broker running on `/ws/v1/live-alerts`.
+  - REST endpoints querying PostgreSQL (`/api/v1/metrics/summary`, `/api/v1/health/components`, etc.).
+  - Demo HTML monitor page running on `/demo`.
+- **Grafana Dashboards**: provisioned in `config/grafana/provisioning/dashboards/`.
+  - **Error Trend Analysis**: daily volume, anomaly count stacked bars, rate %.
+  - **Anomaly Timeline**: hourly severity breakdown, component lines, donut chart.
+  - **Component Health Heatmap**: status table, gauges, bar chart.
+- *Date filters fix*: Removed strict time bounds (`CURRENT_DATE - 7` / `NOW() - INTERVAL`) from REST endpoints and Grafana dashboards since BGL dataset timestamps are from 2005.
+
 ---
 
 ## ❌ What Is NOT Yet Done
 
 | Phase | Task | Status |
 |---|---|---|
-| Phase 4 | Full FastAPI async gateway (WebSockets, Kafka consumer, REST APIs) | ❌ Only stub exists |
-| Phase 4 | Grafana dashboard JSON provisioning | ❌ Not configured |
 | Phase 5 | Chaos engineering validation suite | ❌ Not started |
 
 ---
@@ -87,6 +97,7 @@
 | `UnboundLocalError` in `setup_kafka_topics.py` | Initialized `all_ok = True` variable before execution |
 | Spark `submit_spark_job.py` Ivy cache download fails | Replaced `--packages` with `--jars` to use pre-baked local JARs inside container |
 | `train_model.py` "Column already exists" error | Dropped ML-generated columns (`cluster`, etc.) before fitting KMeans pipeline |
+| Grafana and FastAPI returning 0 records | BGL dataset timestamps are from 2005; strict `NOW()` and `CURRENT_DATE` date filters removed from dashboard JSONs and `main.py` SQL queries |
 
 ---
 
@@ -259,6 +270,26 @@ docker exec fluentd-agent rm -rf /fluentd/buffer/kafka_output
 docker restart fluentd-agent
 ```
 
+### 🔵 Phase 4 — Verification Commands
+
+```powershell
+# 1. Check if FastAPI and Grafana containers are healthy
+docker ps --format "table {{.Names}}\t{{.Status}}" | Select-String "fastapi|grafana"
+
+# 2. Test FastAPI endpoints
+curl http://localhost:8000/health
+curl http://localhost:8000/api/v1/health/components
+curl http://localhost:8000/api/v1/alerts/recent?limit=5
+
+# 3. Test the WebSocket Live Alerts monitor
+# Open your browser and navigate to: http://localhost:8000/demo
+# Once open, it should say "Stream connected."
+
+# 4. View Grafana Dashboards
+# Open http://localhost:3000 (admin / aiops_grafana)
+# Navigate to Dashboards -> AIOps Dashboards directory
+```
+
 ---
 
 ### 🔧 Rebuild After Code Changes
@@ -279,26 +310,6 @@ docker-compose up -d fastapi-server
 # Push updated Python scripts to Spark container (no rebuild needed)
 docker cp src/. spark-master:/app/src
 ```
-
----
-
-## Phase 4 — What Needs to Be Built Next
-
-The existing `src/api/main.py` is a **stub only** (just `/health`). The full implementation needs:
-
-1. **`src/api/main.py`** (full replacement):
-   - FastAPI lifespan startup → launches `aiokafka` background consumer on `critical-alerts`
-   - WebSocket endpoint: `GET /ws/v1/live-alerts` — broadcasts anomaly events to browser clients
-   - REST endpoints: `GET /api/v1/metrics/summary`, `GET /api/v1/alerts/recent`
-   - Async PostgreSQL queries via `asyncpg`
-   - Prometheus metrics endpoint
-
-2. **Grafana dashboard JSON** (`config/grafana/provisioning/dashboards/`):
-   - Error trend charts from `batch_metrics`
-   - Anomaly timeline from `anomaly_alerts_pg`
-   - Component health heatmap from `component_health`
-
-3. **WebSocket client** (optional HTML page for demo)
 
 ---
 

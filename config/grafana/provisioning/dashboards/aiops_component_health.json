@@ -1,0 +1,240 @@
+{
+  "__inputs": [],
+  "__requires": [
+    { "type": "datasource", "id": "postgres", "name": "PostgreSQL", "version": "1.0.0" }
+  ],
+  "annotations": { "list": [] },
+  "description": "AIOps component health heatmap and status table from component_health PostgreSQL table",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🔬 Component Health Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Current health status of all BGL components",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "healthy":  { "color": "#3fb950", "index": 0, "text": "✅ Healthy" },
+                "degraded": { "color": "#d29922", "index": 1, "text": "⚠ Degraded" },
+                "critical": { "color": "#f85149", "index": 2, "text": "🔴 Critical" },
+                "unknown":  { "color": "#8b949e", "index": 3, "text": "? Unknown" }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "component" },       "properties": [{ "id": "custom.width", "value": 120 }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] },
+          { "matcher": { "id": "byName", "options": "status" },          "properties": [{ "id": "custom.width", "value": 130 }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }] },
+          { "matcher": { "id": "byName", "options": "error_rate_pct" },  "properties": [{ "id": "custom.width", "value": 130 }, { "id": "unit", "value": "percent" }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 25 }] } }] },
+          { "matcher": { "id": "byName", "options": "total_events" },    "properties": [{ "id": "custom.width", "value": 130 }, { "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "total_anomalies" }, "properties": [{ "id": "custom.width", "value": 140 }, { "id": "unit", "value": "short" }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 500 }] } }] },
+          { "matcher": { "id": "byName", "options": "last_seen" }, "properties": [{ "id": "custom.width", "value": 200 }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "cellHeight": "md",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "displayName": "error_rate_pct", "desc": true }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT component, status, ROUND(COALESCE(error_rate_pct,0)::numeric,2) AS error_rate_pct, total_events, total_anomalies, last_seen::text AS last_seen FROM component_health ORDER BY COALESCE(error_rate_pct,0) DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Component Health Status Table",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Error rate % per component — gauge visualization",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 25 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^error_rate_pct$/", "values": true },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT component, ROUND(COALESCE(error_rate_pct,0)::numeric,2) AS error_rate_pct FROM component_health ORDER BY error_rate_pct DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate % by Component",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Total anomaly count per component — bar chart",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Anomalies",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "scaleDistribution": { "type": "linear" },
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "id": 3,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 200
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT component, total_anomalies FROM component_health ORDER BY total_anomalies DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Anomalies by Component",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "id": 101,
+      "title": "📈 Daily Alert Frequency",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Daily alert count per component from alert_summary roll-up table",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
+      "id": 10,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT summary_date AS time, component AS metric, alert_count AS value FROM alert_summary ORDER BY summary_date",
+          "refId": "A"
+        }
+      ],
+      "title": "Daily Alert Count per Component (30d) — from alert_summary",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "tags": ["aiops", "phase4", "component-health"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AIOps — Component Health Heatmap",
+  "uid": "aiops-component-health",
+  "version": 1
+}

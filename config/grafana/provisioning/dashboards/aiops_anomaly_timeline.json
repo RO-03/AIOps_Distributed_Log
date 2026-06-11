@@ -1,0 +1,217 @@
+{
+  "__inputs": [],
+  "__requires": [
+    { "type": "datasource", "id": "postgres", "name": "PostgreSQL", "version": "1.0.0" }
+  ],
+  "annotations": { "list": [] },
+  "description": "AIOps anomaly timeline from anomaly_alerts_pg — real-time alert feed and historical distribution",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🚨 Anomaly Timeline",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Anomaly events over time from anomaly_alerts_pg — coloured by severity",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "FATAL" }, "properties": [{ "id": "color", "value": { "fixedColor": "#f85149", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [{ "id": "color", "value": { "fixedColor": "#d29922", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "WARN" },  "properties": [{ "id": "color", "value": { "fixedColor": "#58a6ff", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT DATE_TRUNC('hour', event_time) AS time, severity AS metric, COUNT(*) AS value FROM anomaly_alerts_pg GROUP BY DATE_TRUNC('hour', event_time), severity ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Anomalies per Hour by Severity (7d)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Anomaly events by component over time",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 10 },
+      "id": 2,
+      "options": {
+        "legend": { "calcs": ["max", "sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT DATE_TRUNC('hour', event_time) AS time, component AS metric, COUNT(*) AS value FROM anomaly_alerts_pg GROUP BY DATE_TRUNC('hour', event_time), component ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Anomalies by Component (7d)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Breakdown of alerts by severity",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false } },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "FATAL" }, "properties": [{ "id": "color", "value": { "fixedColor": "#f85149", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [{ "id": "color", "value": { "fixedColor": "#d29922", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "WARN" },  "properties": [{ "id": "color", "value": { "fixedColor": "#58a6ff", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 10 },
+      "id": 3,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "pieType": "donut",
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT severity AS metric, COUNT(*) AS value FROM anomaly_alerts_pg GROUP BY severity ORDER BY value DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Alert Severity Distribution (7d)",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 101,
+      "title": "📋 Recent Alerts Table",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "description": "Last 100 anomaly alert events",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "minWidth": 50
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "severity" }, "properties": [{ "id": "custom.width", "value": 80 }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "#d29922", "value": 1 }, { "color": "#f85149", "value": 2 }] } }, { "id": "mappings", "value": [{ "options": { "FATAL": { "color": "#f85149", "index": 2, "text": "FATAL" }, "ERROR": { "color": "#d29922", "index": 1, "text": "ERROR" }, "WARN": { "color": "#58a6ff", "index": 0, "text": "WARN" } }, "type": "value" }] }] },
+          { "matcher": { "id": "byName", "options": "message" }, "properties": [{ "id": "custom.width", "value": 400 }] },
+          { "matcher": { "id": "byName", "options": "event_time" }, "properties": [{ "id": "custom.width", "value": 200 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 19 },
+      "id": 20,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "displayName": "event_time", "desc": true }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT event_time, component, severity, host, message, ROUND(anomaly_score::numeric, 4) AS anomaly_score, cluster_id FROM anomaly_alerts_pg ORDER BY event_time DESC NULLS LAST LIMIT 100",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Anomaly Alerts (latest 100)",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["aiops", "phase4", "anomaly-timeline"],
+  "templating": { "list": [] },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AIOps — Anomaly Timeline",
+  "uid": "aiops-anomaly-timeline",
+  "version": 1
+}
