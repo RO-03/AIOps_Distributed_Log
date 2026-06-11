@@ -98,6 +98,7 @@ def create_topics(bootstrap: str) -> bool:
             )
         )
 
+    all_ok = True
     try:
         admin.create_topics(new_topics=new_topics, validate_only=False)
         log.info("✅ Topics creation request succeeded")

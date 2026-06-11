@@ -148,8 +148,8 @@ def read_kafka_stream(spark: SparkSession) -> DataFrame:
         F.col("message"),
         F.col("is_anomaly").cast(IntegerType()).alias("label_original"),
         F.to_timestamp(F.col("ingested_at"), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").alias("ingested_at"),
-        F.date_format(
-            F.to_timestamp(F.col("timestamp"), "yyyy-MM-dd-HH.mm.ss.SSSSSS"), "yyyy-MM-dd"
+        F.to_date(
+            F.to_timestamp(F.col("timestamp"), "yyyy-MM-dd-HH.mm.ss.SSSSSS")
         ).alias("log_date"),
     ).filter(F.col("message").isNotNull())
 
