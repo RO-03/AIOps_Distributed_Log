@@ -24,9 +24,18 @@ import json
 import logging
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except AttributeError:
+    pass
+
+# Add project root to sys.path so 'chaos' can be imported
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -87,7 +96,7 @@ def print_report(results: List[Dict]):
     """Print a human-readable summary table."""
     print("\n" + "=" * 70)
     print("  PHASE 5 — CHAOS ENGINEERING REPORT")
-    print("  Generated at: " + datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    print("  Generated at: " + datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     print("=" * 70)
     all_passed = True
     for r in results:

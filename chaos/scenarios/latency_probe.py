@@ -78,9 +78,12 @@ def _inject_probe_log(probe_id: str) -> float:
         f"R00-M0-NB0-NB0 RAS PROBE_MSG CHAOS_PROBE_ID={probe_id} latency_test=1"
     )
     # Append to log file inside the log-generator container
-    result = _run(
-        f'docker exec {LOG_GENERATOR_CONTAINER} '
-        f'sh -c \'echo "{log_line}" >> {LOG_FILE_IN_CONTAINER}\''
+    result = subprocess.run(
+        [
+            "docker", "exec", LOG_GENERATOR_CONTAINER,
+            "sh", "-c", f"echo '{log_line}' >> {LOG_FILE_IN_CONTAINER}"
+        ],
+        capture_output=True, text=True
     )
     inject_time = time.time()
     if result.returncode == 0:
@@ -111,12 +114,15 @@ def _inject_probe_kafka(probe_id: str) -> float:
         "is_anomaly": 1,
         "cluster": 0,
     })
-    result = _run(
-        f'docker exec -i kafka-1 '
-        f'sh -c \'echo \'{payload}\' | '
-        f'kafka-console-producer '
-        f'--broker-list kafka-1:29092 '
-        f'--topic {KAFKA_TOPIC_ALERTS}\''
+    result = subprocess.run(
+        [
+            "docker", "exec", "-i", "kafka-1",
+            "kafka-console-producer",
+            "--bootstrap-server", "kafka-1:29092",
+            "--topic", KAFKA_TOPIC_ALERTS
+        ],
+        input=payload + "\n",
+        capture_output=True, text=True
     )
     inject_time = time.time()
     log.info(

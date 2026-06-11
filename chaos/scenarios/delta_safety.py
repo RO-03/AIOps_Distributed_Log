@@ -98,20 +98,10 @@ def _get_delta_state() -> Dict:
         secret_key=MINIO_SECRET_KEY,
         delta_path=DELTA_PATH,
     )
-    # Write snippet to temp file inside container
-    _run(
-        f"docker exec {SPARK_MASTER_CONTAINER} "
-        f"sh -c 'cat > /tmp/delta_check.py << '\"'\"'PYEOF'\"'\"'\n"
-        + snippet
-        + "\nPYEOF'"
-    )
-    # Use heredoc approach via echo
-    write_cmd = (
-        f"docker exec -i {SPARK_MASTER_CONTAINER} "
-        f"sh -c 'cat > /tmp/delta_check.py'"
-    )
+    # Write snippet to temp file inside container via stdin
     proc = subprocess.run(
-        write_cmd, shell=True, input=snippet,
+        ["docker", "exec", "-i", SPARK_MASTER_CONTAINER, "sh", "-c", "cat > /tmp/delta_check.py"],
+        input=snippet,
         capture_output=True, text=True
     )
 
@@ -179,11 +169,14 @@ def _check_no_tmp_files() -> bool:
     Check MinIO for .tmp files in the _delta_log directory.
     Uses the mc client from the minio-init image.
     """
-    result = _run(
-        'docker run --rm --network aiops-storage-net minio/mc:latest '
-        'sh -c "mc alias set local http://minio-oss:9000 aiops_admin aiops_secret_2024 '
-        '&& mc find local/telemetry-lakehouse/processed_logs/_delta_log --name \'*.tmp\' '
-        '2>/dev/null | wc -l"'
+    result = subprocess.run(
+        [
+            "docker", "run", "--rm", "--network", "aiops-storage-net", "minio/mc:latest",
+            "sh", "-c",
+            "mc alias set local http://minio-oss:9000 aiops_admin aiops_secret_2024 && "
+            "mc find local/telemetry-lakehouse/processed_logs/_delta_log --name '*.tmp' 2>/dev/null | wc -l"
+        ],
+        capture_output=True, text=True
     )
     try:
         count = int(result.stdout.strip().splitlines()[-1])

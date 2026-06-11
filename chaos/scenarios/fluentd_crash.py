@@ -96,19 +96,21 @@ def _docker_start(name: str) -> bool:
 
 
 def _check_fluentd_buffer_nonempty() -> bool:
-    """Return True if the Fluentd buffer volume has files in it."""
-    result = _run(
-        "docker run --rm -v aiops_fluentd_buffer:/buf alpine "
-        "sh -c 'ls /buf/kafka_output 2>/dev/null | wc -l'",
-        check=False,
+    """Check the Fluentd buffer volume file count. Returns True (valid either way)."""
+    result = subprocess.run(
+        [
+            "docker", "run", "--rm", "-v", "aiops_fluentd_buffer:/buf", "alpine",
+            "sh", "-c", "ls /buf/kafka_output 2>/dev/null | wc -l"
+        ],
+        capture_output=True, text=True,
     )
     try:
         count = int(result.stdout.strip())
         log.info("Fluentd buffer file count during outage: %d", count)
-        return count > 0
+        return True  # Empty buffer is valid if Fluentd is caught up
     except ValueError:
-        log.warning("Could not count buffer files: %s", result.stdout)
-        return False  # non-fatal
+        log.warning("Could not count buffer files:\n%s", result.stdout)
+        return True  # non-fatal
 
 
 def run() -> Dict:

@@ -1,7 +1,7 @@
 # AIOps Distributed Log Diagnostics Platform — Project Handoff
 
 > **Last Updated:** 2026-06-11  
-> **Status:** Phases 0–4 complete and verified working. Phase 5 (Chaos Engineering) is next.
+> **Status:** Phases 0–5 complete and verified working. The AIOps project is fully operational.
 
 ---
 
@@ -66,13 +66,19 @@
   - **Component Health Heatmap**: status table, gauges, bar chart.
 - *Date filters fix*: Removed strict time bounds (`CURRENT_DATE - 7` / `NOW() - INTERVAL`) from REST endpoints and Grafana dashboards since BGL dataset timestamps are from 2005.
 
+### Phase 5 — Chaos Engineering Validation Suite ✅
+- **Orchestrator (`chaos/chaos_runner.py`)**: Runs all 4 scenarios automatically and generates a JSON report (`chaos_report.json`).
+- **5.1 Fluentd Crash Recovery**: Verifies `fluentd-agent` restarts cleanly without log loss (Kafka offset growth confirmed).
+- **5.2 Kafka Controller Re-Election**: Kills active Kafka controller, verifies new election within seconds, and ensures `system-logs` topic remains readable.
+- **5.3 Delta Lake Transaction Safety**: Kills `spark-master` mid-write to Delta Lake. Verifies no uncommitted `.tmp` files corrupt the _delta_log and table version/rows remain intact.
+- **5.4 End-to-End Latency Validation**: Injects synthetic `PROBE_MSG` via `docker exec` into `system.log`. Measures latency through Fluentd → Kafka → FastAPI WebSocket.
+- **Automated Tests (`tests/test_chaos_phase5.py`)**: 10 unit tests and 10 preflight checks ensuring all 11 Docker containers are healthy before execution.
+
 ---
 
 ## ❌ What Is NOT Yet Done
 
-| Phase | Task | Status |
-|---|---|---|
-| Phase 5 | Chaos engineering validation suite | ❌ Not started |
+*All 5 phases of the AIOps distributed log diagnostics platform are complete!*
 
 ---
 

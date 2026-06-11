@@ -146,7 +146,7 @@ class TestPreflight(unittest.TestCase):
 # Unit Tests — Pure logic, no Docker required
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestFluentdCrashLogic(unittest.TestCase):
+class TestUnitFluentdCrashLogic(unittest.TestCase):
     """Unit tests for fluentd_crash scenario logic (no Docker calls)."""
 
     def test_offset_parsing(self):
@@ -183,7 +183,7 @@ class TestFluentdCrashLogic(unittest.TestCase):
         self.assertIsInstance(result["checks"], dict)
 
 
-class TestKafkaFailoverLogic(unittest.TestCase):
+class TestUnitKafkaFailoverLogic(unittest.TestCase):
     """Unit tests for kafka_failover scenario logic."""
 
     def test_node_id_to_container_mapping(self):
@@ -215,7 +215,7 @@ class TestKafkaFailoverLogic(unittest.TestCase):
         self.assertIn("metrics", result)
 
 
-class TestDeltaSafetyLogic(unittest.TestCase):
+class TestUnitDeltaSafetyLogic(unittest.TestCase):
     """Unit tests for delta_safety scenario logic."""
 
     def test_delta_state_fallback_on_fresh_deploy(self):
@@ -226,7 +226,8 @@ class TestDeltaSafetyLogic(unittest.TestCase):
              patch.object(ds, "_start_container", return_value=True), \
              patch.object(ds, "_spark_master_healthy", return_value=True), \
              patch.object(ds, "_check_no_tmp_files", return_value=True), \
-             patch("subprocess.Popen") as mock_popen:
+             patch("subprocess.Popen") as mock_popen, \
+             patch("subprocess.run") as mock_run:
             mock_proc = MagicMock()
             mock_popen.return_value = mock_proc
             result = ds.run()
@@ -248,14 +249,15 @@ class TestDeltaSafetyLogic(unittest.TestCase):
              patch.object(ds, "_start_container", return_value=True), \
              patch.object(ds, "_spark_master_healthy", return_value=True), \
              patch.object(ds, "_check_no_tmp_files", return_value=True), \
-             patch("subprocess.Popen") as mock_popen:
+             patch("subprocess.Popen") as mock_popen, \
+             patch("subprocess.run") as mock_run:
             mock_popen.return_value = MagicMock()
             result = ds.run()
         # Either delta_table_not_corrupted or committed_row_count_intact should fail
         self.assertFalse(result["passed"])
 
 
-class TestLatencyProbeLogic(unittest.TestCase):
+class TestUnitLatencyProbeLogic(unittest.TestCase):
     """Unit tests for latency_probe scenario logic."""
 
     def test_probe_id_is_unique(self):
@@ -282,6 +284,7 @@ class TestLatencyProbeLogic(unittest.TestCase):
              patch.object(lp, "_inject_probe_kafka", return_value=time.time()), \
              patch.object(lp, "_scan_kafka_for_probe", return_value=None), \
              patch.object(lp, "_check_fastapi_alerts", return_value=True), \
+             patch.object(lp, "_wait_for_websocket_message"), \
              patch("asyncio.run", return_value=None):  # WS returns None
             result = lp.run()
         # With REST fallback passing, these two checks should be True

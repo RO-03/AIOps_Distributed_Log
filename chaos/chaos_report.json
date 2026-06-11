@@ -1,0 +1,18 @@
+[
+  {
+    "passed": true,
+    "checks": {
+      "fluentd_stopped_cleanly": true,
+      "buffer_files_present_during_outage": true,
+      "fluentd_restarted_cleanly": true,
+      "kafka_offset_grew_after_recovery": true
+    },
+    "metrics": {
+      "offset_before_crash": 9235686,
+      "offset_after_recovery": 9258249,
+      "messages_delivered_after_crash": 22563
+    },
+    "elapsed_s": 30.31,
+    "label": "5.1 Fluentd Crash Recovery"
+  }
+]
