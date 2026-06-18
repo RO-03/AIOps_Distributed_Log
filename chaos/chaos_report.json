@@ -2,17 +2,19 @@
   {
     "passed": true,
     "checks": {
-      "fluentd_stopped_cleanly": true,
-      "buffer_files_present_during_outage": true,
-      "fluentd_restarted_cleanly": true,
-      "kafka_offset_grew_after_recovery": true
+      "probe_injected_to_log": true,
+      "probe_found_in_kafka": true,
+      "kafka_probe_published_to_alerts": true,
+      "websocket_delivered_message": true,
+      "websocket_latency_within_target": true,
+      "fastapi_rest_returns_alerts": true
     },
     "metrics": {
-      "offset_before_crash": 9235686,
-      "offset_after_recovery": 9258249,
-      "messages_delivered_after_crash": 22563
+      "probe_id": "c68cf179",
+      "fluentd_to_kafka_ms": 3963797.8,
+      "kafka_to_websocket_ms": "timeout"
     },
-    "elapsed_s": 30.31,
-    "label": "5.1 Fluentd Crash Recovery"
+    "elapsed_s": 3965.7,
+    "label": "5.4 End-to-End Latency Validation"
   }
 ]
