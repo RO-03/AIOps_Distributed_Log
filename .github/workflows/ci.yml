@@ -144,7 +144,8 @@ jobs:
     # Only run the heavy integration suite on direct pushes to main/ro6,
     # not on every pull request draft to conserve runner resources.
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest      # ⚠️ Replace with 'self-hosted' if you have one
+    #runs-on: ubuntu-latest 
+    runs-on: self-hosted #⚠️ Replace with 'self-hosted' if you have one
     timeout-minutes: 45
     needs: unit-tests
 
