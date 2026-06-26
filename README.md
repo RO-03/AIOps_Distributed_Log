@@ -124,8 +124,13 @@ Or run individual scenarios:
 ```bash
 python chaos/chaos_runner.py --scenario fluentd
 python chaos/chaos_runner.py --scenario kafka
-python chaos/chaos_runner.py --scenario delta
 python chaos/chaos_runner.py --scenario latency
+
+
+docker exec spark-master pkill -f SparkSubmit
+docker restart spark-master spark-worker
+
+python chaos/chaos_runner.py --scenario delta
 ```
 
 To run the isolated unit/logic tests:
