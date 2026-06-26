@@ -1,444 +1,53 @@
-Run ruff check src/ tests/ chaos/ scripts/ \
-  ruff check src/ tests/ chaos/ scripts/ \
-    --select E,F,W,I \
-    --ignore E501 \
-    --exclude .venv,__pycache__,.pytest_cache
+Run python -m pytest tests/test_chaos_phase5.py \
+  python -m pytest tests/test_chaos_phase5.py \
+    -v \
+    --tb=long \
+    --no-header \
+    -rA \
+    --junit-xml=test-results/integration-results.xml
   shell: /usr/bin/bash -e {0}
   env:
     PYTHON_VERSION: 3.12
     PIP_CACHE_DIR: ~/.cache/pip
-    pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
-    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
-    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
-    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
-    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
-    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
-F401 [*] `typing.Optional` imported but unused
-  --> chaos/scenarios/delta_safety.py:36:26
-   |
-34 | import subprocess
-35 | import time
-36 | from typing import Dict, Optional
-   |                          ^^^^^^^^
-37 |
-38 | log = logging.getLogger("chaos.delta_safety")
-   |
-help: Remove unused import: `typing.Optional`
-
-F841 Local variable `proc` is assigned to but never used
-   --> chaos/scenarios/delta_safety.py:102:5
-    |
-100 |     )
-101 |     # Write snippet to temp file inside container via stdin
-102 |     proc = subprocess.run(
-    |     ^^^^
-103 |         ["docker", "exec", "-i", SPARK_MASTER_CONTAINER, "sh", "-c", "cat > /tmp/delta_check.py"],
-104 |         input=snippet,
-    |
-help: Remove assignment to unused variable `proc`
-
-I001 [*] Import block is un-sorted or un-formatted
-   --> chaos/scenarios/latency_probe.py:218:5
-    |
-216 |       async Kafka consumer time to consume and persist the alert to DB.
-217 |       """
-218 | /     import urllib.request
-219 | |     import urllib.error
-    | |_______________________^
-220 |       max_attempts = 3
-221 |       for attempt in range(1, max_attempts + 1):
-    |
-help: Organize imports
-
-F401 [*] `time` imported but unused
-  --> scripts/generate_logs.py:13:8
-   |
-11 | import json
-12 | import random
-13 | import time
-   |        ^^^^
-14 | from datetime import datetime, timedelta
-   |
-help: Remove unused import: `time`
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> scripts/init_lakehouse.py:17:1
-   |
-15 |   """
-16 |
-17 | / import argparse
-18 | | import logging
-19 | | import sys
-20 | | from pyspark.sql import SparkSession
-21 | | from pyspark.sql.types import (
-22 | |     StructType, StructField,
-23 | |     StringType, IntegerType, LongType,
-24 | |     DoubleType, TimestampType, BooleanType, DateType
-25 | | )
-   | |_^
-26 |
-27 |   logging.basicConfig(
-   |
-help: Organize imports
-
-F401 [*] `pyspark.sql.types.LongType` imported but unused
-  --> scripts/init_lakehouse.py:23:30
-   |
-21 | from pyspark.sql.types import (
-22 |     StructType, StructField,
-23 |     StringType, IntegerType, LongType,
-   |                              ^^^^^^^^
-24 |     DoubleType, TimestampType, BooleanType, DateType
-25 | )
-   |
-help: Remove unused import: `pyspark.sql.types.LongType`
-
-F401 [*] `socket` imported but unused
-  --> scripts/network_isolation_audit.py:25:8
-   |
-24 | import logging
-25 | import socket
-   |        ^^^^^^
-26 | import subprocess
-27 | import sys
-   |
-help: Remove unused import: `socket`
-
-F401 [*] `time` imported but unused
-  --> scripts/network_isolation_audit.py:28:8
-   |
-26 | import subprocess
-27 | import sys
-28 | import time
-   |        ^^^^
-29 | from dataclasses import dataclass
-   |
-help: Remove unused import: `time`
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> scripts/setup_kafka_topics.py:18:1
-   |
-16 |   """
-17 |
-18 | / import argparse
-19 | | import logging
-20 | | import sys
-21 | | import time
-22 | |
-23 | | from kafka.admin import KafkaAdminClient, NewTopic
-24 | | from kafka.errors import TopicAlreadyExistsError, NoBrokersAvailable
-   | |____________________________________________________________________^
-25 |
-26 |   logging.basicConfig(
-   |
-help: Organize imports
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> scripts/submit_spark_job.py:12:1
-   |
-10 |   """
-11 |
-12 | / import argparse
-13 | | import subprocess
-14 | | import sys
-15 | | import logging
-   | |______________^
-16 |
-17 |   logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-   |
-help: Organize imports
-
-F541 [*] f-string without any placeholders
-  --> scripts/submit_spark_job.py:71:19
-   |
-69 |         "--conf", "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension",
-70 |         "--conf", "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog",
-71 |         "--conf", f"spark.hadoop.fs.s3a.endpoint=http://minio-oss:9000",
-   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-72 |         "--conf", "spark.hadoop.fs.s3a.path.style.access=true",
-73 |         "--conf", "spark.hadoop.fs.s3a.connection.ssl.enabled=false",
-   |
-help: Remove extraneous `f` prefix
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> src/api/main.py:15:1
-   |
-13 |   #   POSTGRES_DSN             ***postgres-db:5432/aiops_analytics
-14 |
-15 | / import asyncio
-16 | | import json
-17 | | import os
-18 | | import time
-19 | | import uuid
-20 | | from contextlib import asynccontextmanager
-21 | | from datetime import datetime
-22 | | from typing import List, Optional
-23 | |
-24 | | import asyncpg
-25 | | from aiokafka import AIOKafkaConsumer
-26 | | from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
-27 | | from fastapi.responses import PlainTextResponse, HTMLResponse
-28 | | from loguru import logger
-29 | | from prometheus_client import Counter, Gauge, Histogram, generate_latest, CONTENT_TYPE_LATEST
-30 | | from pydantic import BaseModel
-31 | | from tenacity import retry, stop_after_attempt, wait_exponential
-   | |________________________________________________________________^
-32 |
-33 |   # ── Environment ───────────────────────────────────────────────────────────────
-   |
-help: Organize imports
-
-W293 [*] Blank line contains whitespace
-   --> src/api/main.py:198:1
-    |
-196 |                     )
-197 |                     ALERTS_RECEIVED_TOTAL.inc()
-198 |                     
-    | ^^^^^^^^^^^^^^^^^^^^
-199 |                     # Insert into PostgreSQL anomaly_alerts_pg
-200 |                     if state.db_pool:
-    |
-help: Remove whitespace from blank line
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> src/ml/train_model.py:17:1
-   |
-15 |   """
-16 |
-17 | / import argparse
-18 | | import logging
-19 | | import os
-20 | | import sys
-21 | |
-22 | | from pyspark.ml import Pipeline
-23 | | from pyspark.ml.clustering import KMeans
-24 | | from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler
-25 | | from pyspark.ml.evaluation import ClusteringEvaluator
-26 | | from pyspark.sql import SparkSession
-27 | | from pyspark.sql import functions as F
-   | |______________________________________^
-28 |
-29 |   logging.basicConfig(
-   |
-help: Organize imports
-
-W293 [*] Blank line contains whitespace
-  --> src/ml/train_model.py:76:1
-   |
-74 |     # Ensure message column exists and is not null
-75 |     df = df.filter(F.col("message").isNotNull() & (F.length(F.col("message")) > 0))
-76 |     
-   | ^^^^
-77 |     # Drop columns that the ML pipeline will create to avoid "Column already exists" errors
-78 |     # (These columns exist if we are reading from processed_logs)
-   |
-help: Remove whitespace from blank line
-
-I001 [*] Import block is un-sorted or un-formatted
-   --> src/ml/train_model.py:156:5
-    |
-155 |       # Save metadata as a tiny text file for the streaming job to read
-156 | /     import boto3
-157 | |     import json
-    | |_______________^
-158 |
-159 |       s3 = boto3.client(
-    |
-help: Organize imports
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> src/processing/stream_processor.py:21:1
-   |
-19 |   """
-20 |
-21 | / import json
-22 | | import logging
-23 | | import os
-24 | | import time
-25 | | import uuid
-26 | | from datetime import datetime, timezone
-27 | | from typing import List, Optional, Tuple
-28 | |
-29 | | import psycopg2
-30 | | from pyspark.ml import Pipeline, PipelineModel
-31 | | from pyspark.ml.clustering import KMeans
-32 | | from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler
-33 | | from pyspark.ml.linalg import Vectors
-34 | | from pyspark.sql import DataFrame, SparkSession
-35 | | from pyspark.sql import functions as F
-36 | | from pyspark.sql.types import (
-37 | |     DoubleType,
-38 | |     IntegerType,
-39 | |     StringType,
-40 | |     StructField,
-41 | |     StructType,
-42 | |     TimestampType,
-43 | | )
-   | |_^
-44 |
-45 |   logging.basicConfig(
-   |
-help: Organize imports
-
-F401 [*] `json` imported but unused
-  --> src/processing/stream_processor.py:21:8
-   |
-19 | """
-20 |
-21 | import json
-   |        ^^^^
-22 | import logging
-23 | import os
-   |
-help: Remove unused import: `json`
-
-F401 [*] `time` imported but unused
-  --> src/processing/stream_processor.py:24:8
-   |
-22 | import logging
-23 | import os
-24 | import time
-   |        ^^^^
-25 | import uuid
-26 | from datetime import datetime, timezone
-   |
-help: Remove unused import: `time`
-
-F401 [*] `datetime.datetime` imported but unused
-  --> src/processing/stream_processor.py:26:22
-   |
-24 | import time
-25 | import uuid
-26 | from datetime import datetime, timezone
-   |                      ^^^^^^^^
-27 | from typing import List, Optional, Tuple
-   |
-help: Remove unused import
-
-F401 [*] `datetime.timezone` imported but unused
-  --> src/processing/stream_processor.py:26:32
-   |
-24 | import time
-25 | import uuid
-26 | from datetime import datetime, timezone
-   |                                ^^^^^^^^
-27 | from typing import List, Optional, Tuple
-   |
-help: Remove unused import
-
-F401 [*] `typing.Tuple` imported but unused
-  --> src/processing/stream_processor.py:27:36
-   |
-25 | import uuid
-26 | from datetime import datetime, timezone
-27 | from typing import List, Optional, Tuple
-   |                                    ^^^^^
-28 |
-29 | import psycopg2
-   |
-help: Remove unused import: `typing.Tuple`
-
-F401 [*] `pyspark.ml.linalg.Vectors` imported but unused
-  --> src/processing/stream_processor.py:33:31
-   |
-31 | from pyspark.ml.clustering import KMeans
-32 | from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler
-33 | from pyspark.ml.linalg import Vectors
-   |                               ^^^^^^^
-34 | from pyspark.sql import DataFrame, SparkSession
-35 | from pyspark.sql import functions as F
-   |
-help: Remove unused import: `pyspark.ml.linalg.Vectors`
-
-F401 [*] `pyspark.sql.types.TimestampType` imported but unused
-  --> src/processing/stream_processor.py:42:5
-   |
-40 |     StructField,
-41 |     StructType,
-42 |     TimestampType,
-   |     ^^^^^^^^^^^^^
-43 | )
-   |
-help: Remove unused import: `pyspark.sql.types.TimestampType`
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> tests/test_chaos_phase5.py:24:1
-   |
-22 |   """
-23 |
-24 | / import json
-25 | | import socket
-26 | | import subprocess
-27 | | import sys
-28 | | import time
-29 | | import unittest
-30 | | from unittest.mock import MagicMock, patch
-31 | |
-32 | | # ── Add project root to path ───────────────────────────────────────────────────
-33 | | from pathlib import Path
-   | |________________________^
-34 |   sys.path.insert(0, str(Path(__file__).parent.parent))
-   |
-help: Organize imports
-
-I001 [*] Import block is un-sorted or un-formatted
-  --> tests/test_chaos_phase5.py:50:5
-   |
-49 |   def _http_ok(url: str, timeout: int = 5) -> bool:
-50 | /     import urllib.request
-51 | |     import urllib.error
-   | |_______________________^
-52 |       try:
-53 |           with urllib.request.urlopen(url, timeout=timeout) as r:
-   |
-help: Organize imports
-
-F841 Local variable `mock_run` is assigned to but never used
-   --> tests/test_chaos_phase5.py:204:41
-    |
-203 |     def test_result_has_required_keys(self):
-204 |         with patch("subprocess.run") as mock_run, \
-    |                                         ^^^^^^^^
-205 |              patch("subprocess.Popen"):
-206 |             from chaos.scenarios import kafka_failover as kf
-    |
-help: Remove assignment to unused variable `mock_run`
-
-F841 Local variable `mock_run` is assigned to but never used
-   --> tests/test_chaos_phase5.py:230:41
-    |
-228 |              patch.object(ds, "_check_no_tmp_files", return_value=True), \
-229 |              patch("subprocess.Popen") as mock_popen, \
-230 |              patch("subprocess.run") as mock_run:
-    |                                         ^^^^^^^^
-231 |             mock_proc = MagicMock()
-232 |             mock_popen.return_value = mock_proc
-    |
-help: Remove assignment to unused variable `mock_run`
-
-F841 Local variable `mock_run` is assigned to but never used
-   --> tests/test_chaos_phase5.py:253:41
-    |
-251 |              patch.object(ds, "_check_no_tmp_files", return_value=True), \
-252 |              patch("subprocess.Popen") as mock_popen, \
-253 |              patch("subprocess.run") as mock_run:
-    |                                         ^^^^^^^^
-254 |             mock_popen.return_value = MagicMock()
-255 |             result = ds.run()
-    |
-help: Remove assignment to unused variable `mock_run`
-
-I001 [*] Import block is un-sorted or un-formatted
-   --> tests/test_chaos_phase5.py:362:9
-    |
-361 |     def test_all_scenario_modules_importable(self):
-362 |         from chaos.scenarios import fluentd_crash, kafka_failover, delta_safety, latency_probe
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-363 |         for mod in [fluentd_crash, kafka_failover, delta_safety, latency_probe]:
-364 |             self.assertTrue(callable(mod.run), f"{mod.__name__}.run() is not callable")
-    |
-help: Organize imports
-
-Found 30 errors.
-[*] 26 fixable with the `--fix` option (4 hidden fixes can be enabled with the `--unsafe-fixes` option).
-Error: Process completed with exit code 1.
+    COMPOSE_HTTP_TIMEOUT: 120
+    DOCKER_BUILDKIT: 1
+    pythonLocation: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    PKG_CONFIG_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/pkgconfig
+    Python_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
+  
+============================= test session starts ==============================
+collecting ... collected 26 items
+tests/test_chaos_phase5.py::TestPreflight::test_containers_running PASSED [  3%]
+tests/test_chaos_phase5.py::TestPreflight::test_fastapi_health PASSED    [  7%]
+tests/test_chaos_phase5.py::TestPreflight::test_grafana_health PASSED    [ 11%]
+tests/test_chaos_phase5.py::TestPreflight::test_kafka_1_reachable PASSED [ 15%]
+tests/test_chaos_phase5.py::TestPreflight::test_kafka_2_reachable PASSED [ 19%]
+tests/test_chaos_phase5.py::TestPreflight::test_kafka_3_reachable PASSED [ 23%]
+tests/test_chaos_phase5.py::TestPreflight::test_kafka_topics_exist PASSED [ 26%]
+tests/test_chaos_phase5.py::TestPreflight::test_minio_reachable PASSED   [ 30%]
+tests/test_chaos_phase5.py::TestPreflight::test_postgres_reachable PASSED [ 34%]
+tests/test_chaos_phase5.py::TestPreflight::test_spark_master_reachable PASSED [ 38%]
+tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_offset_parsing PASSED [ 42%]
+tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_result_structure PASSED [ 46%]
+tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_node_id_to_container_mapping PASSED [ 50%]
+3s
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Run actions/upload-artifact@v4
+(node:3608) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+With the provided path, there will be 1 file uploaded
+Artifact name is valid!
+Root directory input is valid!
+Beginning upload of artifact content to blob storage
+(node:3608) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Uploaded bytes 1291
+Finished uploading artifact content to blob storage!
+SHA256 digest of uploaded artifact zip is e9dc1d7961233e6cdeb9883b031b73b7eed33c80b024d5dca2332288ec1e1138
+Finalizing artifact upload
+Artifact integration-test-results.zip successfully finalized. Artifact ID 7904029411
+Artifact integration-test-results has been successfully uploaded! Final size is 1291 bytes. Artifact ID is 7904029411
+Artifact download URL: https://github.com/RO-03/AIOps_Distributed_Log/actions/runs/28233149352/artifacts/7904029411
+0s
