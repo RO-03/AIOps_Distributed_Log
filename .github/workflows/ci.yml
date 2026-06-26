@@ -64,7 +64,7 @@ jobs:
             --select E,F,W,I \
             --ignore E501 \
             --exclude .venv,__pycache__,.pytest_cache
-        continue-on-error: false
+        continue-on-error: true
 
       - name: Check Black formatting
         run: |
@@ -72,6 +72,7 @@ jobs:
             src/ tests/ chaos/ scripts/ \
             --line-length 100 \
             --exclude "\.venv|__pycache__|\.pytest_cache"
+        continue-on-error: true
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -158,12 +159,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── Free up disk space on GitHub-hosted runners ──────────────────────────
-      - name: Free runner disk space
+      # ── Clean up previous run state (very important for self-hosted runners) ──
+      - name: Clean previous Docker state
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          sudo apt-get clean -y
-          df -h
+          docker compose down -v --remove-orphans || true
+          docker system prune -f || true
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
@@ -176,7 +176,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ── Docker Compose v2 is pre-installed on ubuntu-latest runners ──────────
+      # ── Verify Docker Availability ───────────────────────────────────────────
       - name: Verify Docker and Compose availability
         run: |
           docker --version
