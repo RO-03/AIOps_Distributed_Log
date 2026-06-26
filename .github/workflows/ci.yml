@@ -7,7 +7,7 @@
 #   2. unit-tests    — Pytest unit/logic tests with mocked Docker calls
 #   3. integration   — Full Docker Compose stack + preflight + chaos test suite
 #
-# Trigger: push/PR to main or master. Integration stage only on push to main
+# Trigger: push/PR to main or ro6 branch. Integration stage only on push to main/ro6
 #          (to avoid exhausting runner resources on every draft PR).
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -17,11 +17,11 @@ on:
   push:
     branches:
       - main
-      - master
+      - ro6
   pull_request:
     branches:
       - main
-      - master
+      - ro6
 
 # Cancel any in-progress run for the same branch on a new push
 concurrency:
@@ -137,11 +137,11 @@ jobs:
 #     For GitHub-hosted runners (7 GB), use a self-hosted runner.
 #     To use self-hosted: change `runs-on` to `self-hosted` or your runner label.
 #
-# This stage runs ONLY on push to main/master (not on PRs) to conserve resources.
+# This stage runs ONLY on push to main/ro6 (not on PRs) to conserve resources.
 # ══════════════════════════════════════════════════════════════════════════════
   integration-tests:
     name: "🚀 Integration & Chaos Tests"
-    # Only run the heavy integration suite on direct pushes to main/master,
+    # Only run the heavy integration suite on direct pushes to main/ro6,
     # not on every pull request draft to conserve runner resources.
     if: github.event_name == 'push'
     runs-on: ubuntu-latest      # ⚠️ Replace with 'self-hosted' if you have one
