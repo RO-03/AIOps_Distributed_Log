@@ -21,7 +21,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     StructType, StructField,
     StringType, IntegerType, LongType,
-    DoubleType, TimestampType, BooleanType,
+    DoubleType, TimestampType, BooleanType, DateType
 )
 
 logging.basicConfig(
@@ -49,20 +49,18 @@ RAW_LOGS_SCHEMA = StructType([
 ])
 
 PROCESSED_LOGS_SCHEMA = StructType([
-    StructField("event_id",            StringType(),  nullable=False),
-    StructField("timestamp",           TimestampType(), nullable=False),
-    StructField("service",             StringType(),  nullable=True),
-    StructField("level_encoded",       IntegerType(), nullable=True),
-    StructField("message_len",         IntegerType(), nullable=True),
-    StructField("latency_ms",          IntegerType(), nullable=True),
-    StructField("latency_zscore",      DoubleType(),  nullable=True),
-    StructField("is_error",            BooleanType(), nullable=True),
-    StructField("hour_of_day",         IntegerType(), nullable=True),
-    StructField("day_of_week",         IntegerType(), nullable=True),
-    StructField("rolling_error_rate",  DoubleType(),  nullable=True),
-    StructField("failure_type",        StringType(),  nullable=True),
-    StructField("is_anomaly",          IntegerType(), nullable=True),
-    StructField("processed_at",        TimestampType(), nullable=True),
+    StructField("event_id",       StringType(),    nullable=False),
+    StructField("event_time",     TimestampType(), nullable=True),
+    StructField("host",           StringType(),    nullable=True),
+    StructField("component",      StringType(),    nullable=True),
+    StructField("severity",       StringType(),    nullable=True),
+    StructField("message",        StringType(),    nullable=True),
+    StructField("log_date",       DateType(),      nullable=True),
+    StructField("cluster",        IntegerType(),   nullable=True),
+    StructField("is_anomaly",     IntegerType(),   nullable=True),
+    StructField("anomaly_score",  DoubleType(),    nullable=True),
+    StructField("ingested_at",    TimestampType(), nullable=True),
+    StructField("processed_at",   TimestampType(), nullable=True),
 ])
 
 ANOMALY_ALERTS_SCHEMA = StructType([
@@ -79,10 +77,11 @@ ANOMALY_ALERTS_SCHEMA = StructType([
     StructField("acknowledged",       BooleanType(),   nullable=True),
 ])
 
+# Spec Step 1.3: MinIO bucket name = telemetry-lakehouse
 TABLES = {
-    "raw_logs":       ("s3a://aiops-lakehouse/raw_logs",       RAW_LOGS_SCHEMA,       "timestamp"),
-    "processed_logs": ("s3a://aiops-lakehouse/processed_logs", PROCESSED_LOGS_SCHEMA, "timestamp"),
-    "anomaly_alerts": ("s3a://aiops-lakehouse/anomaly_alerts", ANOMALY_ALERTS_SCHEMA, "triggered_at"),
+    "raw_logs":       ("s3a://telemetry-lakehouse/raw_logs",       RAW_LOGS_SCHEMA,       "timestamp"),
+    "processed_logs": ("s3a://telemetry-lakehouse/processed_logs", PROCESSED_LOGS_SCHEMA, "log_date"),
+    "anomaly_alerts": ("s3a://telemetry-lakehouse/anomaly_alerts", ANOMALY_ALERTS_SCHEMA, "triggered_at"),
 }
 
 
@@ -96,7 +95,7 @@ def build_spark(master: str) -> SparkSession:
         .appName("AIOps-LakehouseInit")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-oss:9000")
         .config("spark.hadoop.fs.s3a.access.key", "aiops_admin")
         .config("spark.hadoop.fs.s3a.secret.key", "aiops_secret_2024")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
@@ -146,11 +145,18 @@ def verify_table(spark: SparkSession, name: str, path: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Initialize AIOps Delta Lake schema")
-    parser.add_argument("--master", default="spark://spark-master:7077", help="Spark master URL")
+    parser.add_argument("--master", default="spark://spark-master:7077", help="Spark master URL (container: spark-master:7077)")
     args = parser.parse_args()
 
-    spark = build_spark(args.master)
-    spark.sparkContext.setLogLevel("WARN")
+    try:
+        spark = build_spark(args.master)
+        spark.sparkContext.setLogLevel("WARN")
+    except Exception as e:
+        if "JAVA_GATEWAY_EXITED" in str(e) or "Java gateway" in str(e):
+            log.error("Java is missing locally! Run this script via Docker instead:")
+            log.error("    docker exec spark-master python /app/scripts/init_lakehouse.py")
+            sys.exit(1)
+        raise
 
     log.info("═" * 60)
     log.info("AIOps Lakehouse Initialization — Phase 1")
@@ -173,6 +179,7 @@ def main():
 
     log.info("═" * 60)
     log.info("✅ All Delta tables initialized successfully.")
+    log.info("   Bucket        → s3a://telemetry-lakehouse/")
     log.info("   MinIO console → http://localhost:9001")
     log.info("   Spark UI       → http://localhost:8081")
     log.info("═" * 60)

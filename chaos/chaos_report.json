@@ -1,0 +1,21 @@
+[
+  {
+    "passed": true,
+    "checks": {
+      "probe_injected_to_log": true,
+      "probe_found_in_kafka": true,
+      "kafka_probe_published_to_alerts": true,
+      "websocket_delivered_message": true,
+      "websocket_latency_within_target": true,
+      "fastapi_rest_returns_alerts": true
+    },
+    "metrics": {
+      "probe_id": "32fb20bf",
+      "fluentd_to_kafka_ms": 1660.3,
+      "kafka_to_websocket_ms": 24.8,
+      "total_e2e_ms": 1685.1
+    },
+    "elapsed_s": 3.26,
+    "label": "5.4 End-to-End Latency Validation"
+  }
+]

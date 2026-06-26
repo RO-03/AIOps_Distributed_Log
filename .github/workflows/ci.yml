@@ -1,0 +1,288 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# .github/workflows/ci.yml
+# AIOps Distributed Log Diagnostics Platform — Continuous Integration Pipeline
+#
+# Pipeline Stages:
+#   1. lint          — Ruff linting + Black formatting check (fast, no Docker)
+#   2. unit-tests    — Pytest unit/logic tests with mocked Docker calls
+#   3. integration   — Full Docker Compose stack + preflight + chaos test suite
+#
+# Trigger: push/PR to main or ro6 branch. Integration stage only on push to main/ro6
+#          (to avoid exhausting runner resources on every draft PR).
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: AIOps CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - ro6
+  pull_request:
+    branches:
+      - main
+      - ro6
+
+# Cancel any in-progress run for the same branch on a new push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ── Global defaults ────────────────────────────────────────────────────────────
+env:
+  PYTHON_VERSION: "3.12"
+  PIP_CACHE_DIR: ~/.cache/pip
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STAGE 1 — Lint & Format Check
+# Fast, no Docker required. Runs on every push and PR.
+# ══════════════════════════════════════════════════════════════════════════════
+jobs:
+  lint:
+    name: "🔍 Lint & Format"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black
+
+      - name: Run Ruff linter
+        run: |
+          ruff check src/ tests/ chaos/ scripts/ \
+            --select E,F,W,I \
+            --ignore E501 \
+            --exclude .venv,__pycache__,.pytest_cache
+        continue-on-error: true
+
+      - name: Check Black formatting
+        run: |
+          black --check --diff \
+            src/ tests/ chaos/ scripts/ \
+            --line-length 100 \
+            --exclude "\.venv|__pycache__|\.pytest_cache"
+        continue-on-error: true
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STAGE 2 — Unit Tests
+# Pure-logic tests that mock all Docker/subprocess calls.
+# No infrastructure required. Runs on every push and PR.
+# ══════════════════════════════════════════════════════════════════════════════
+  unit-tests:
+    name: "🧪 Unit Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install only the lightweight subset needed for unit tests
+          pip install \
+            pytest==8.1.1 \
+            pytest-asyncio==0.23.6 \
+            fastapi==0.109.0 \
+            pydantic==2.5.3 \
+            kafka-python-ng==2.2.3 \
+            aiokafka==0.10.0 \
+            loguru==0.7.2 \
+            tenacity==8.2.3 \
+            python-dotenv==1.0.0
+
+      - name: Run unit tests (no Docker required)
+        run: |
+          python -m pytest tests/test_chaos_phase5.py \
+            -v \
+            -k "unit" \
+            --tb=short \
+            --no-header \
+            -rN
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: .pytest_cache/
+          retention-days: 7
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STAGE 3 — Integration & Chaos Tests
+# Spins up the FULL Docker Compose stack, runs preflight health checks,
+# initializes all infrastructure, and executes the complete test suite.
+#
+# ⚠️  RESOURCE NOTE: This job requires ~12 GB RAM.
+#     For GitHub-hosted runners (7 GB), use a self-hosted runner.
+#     To use self-hosted: change `runs-on` to `self-hosted` or your runner label.
+#
+# This stage runs ONLY on push to main/ro6 (not on PRs) to conserve resources.
+# ══════════════════════════════════════════════════════════════════════════════
+  integration-tests:
+    name: "🚀 Integration & Chaos Tests"
+    # Only run the heavy integration suite on direct pushes to main/ro6,
+    # not on every pull request draft to conserve runner resources.
+    if: github.event_name == 'push'
+    #runs-on: ubuntu-latest 
+    runs-on: self-hosted #⚠️ Replace with 'self-hosted' if you have one
+    timeout-minutes: 45
+    needs: unit-tests
+
+    # Environment variables passed to docker-compose services
+    env:
+      COMPOSE_HTTP_TIMEOUT: 120
+      DOCKER_BUILDKIT: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Clean up previous run state (very important for self-hosted runners) ──
+      - name: Clean previous Docker state
+        run: |
+          docker compose down -v --remove-orphans || true
+          docker system prune -f || true
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ── Verify Docker Availability ───────────────────────────────────────────
+      - name: Verify Docker and Compose availability
+        run: |
+          docker --version
+          docker compose version
+
+      # ── Build all custom images first ────────────────────────────────────────
+      - name: Build Docker images
+        run: |
+          docker compose build \
+            --parallel \
+            --progress=plain
+        timeout-minutes: 20
+
+      # ── Start full infrastructure stack ──────────────────────────────────────
+      - name: Start infrastructure stack
+        run: |
+          docker compose up -d
+          echo "Stack launched. Waiting 30s for initial startup..."
+          sleep 30
+
+      # ── Wait for all services to become healthy ───────────────────────────────
+      - name: Wait for services to be healthy
+        run: |
+          python scripts/health_check.py --retries 20 --delay 10
+        timeout-minutes: 5
+
+      # ── Print service status for debugging failures ───────────────────────────
+      - name: Show container status
+        if: always()
+        run: docker compose ps
+
+      # ── Initialize PostgreSQL schema ──────────────────────────────────────────
+      - name: Apply PostgreSQL schema
+        run: |
+          cat docker/postgres/init.sql | \
+            docker exec -i postgres-db psql -U aiops_user -d aiops_analytics
+
+      # ── Create Kafka topics ───────────────────────────────────────────────────
+      - name: Setup Kafka topics
+        run: |
+          python scripts/setup_kafka_topics.py
+
+      # ── Initialize Delta Lake on MinIO ────────────────────────────────────────
+      - name: Initialize Delta Lake
+        run: |
+          docker cp scripts/init_lakehouse.py spark-master:/tmp/init_lakehouse.py
+          docker exec spark-master python3 /tmp/init_lakehouse.py
+
+      # ── Start Spark ML streaming job ──────────────────────────────────────────
+      - name: Start Spark streaming job
+        run: |
+          python scripts/submit_spark_job.py --job stream_processor &
+          echo "Spark job submitted. Waiting 15s for it to initialize..."
+          sleep 15
+
+      # ── Run the full Pytest suite (preflight + unit + integration) ────────────
+      - name: Run full test suite
+        run: |
+          python -m pytest tests/test_chaos_phase5.py \
+            -v \
+            --tb=long \
+            --no-header \
+            -rA \
+            --junit-xml=test-results/integration-results.xml
+        timeout-minutes: 15
+
+      # ── Optionally run chaos scenarios ────────────────────────────────────────
+      # Uncomment the block below to also run the full chaos engineering suite.
+      # This adds ~10 minutes and deliberately crashes services.
+      #
+      # - name: Run Chaos Engineering Suite
+      #   run: |
+      #     python chaos/chaos_runner.py
+      #   timeout-minutes: 10
+
+      # ── Upload test results ───────────────────────────────────────────────────
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results/
+          retention-days: 14
+
+      # ── Collect and upload docker logs for post-mortem analysis ──────────────
+      - name: Collect Docker logs on failure
+        if: failure()
+        run: |
+          mkdir -p ci-logs
+          for svc in kafka-1 kafka-2 kafka-3 fluentd-agent spark-master \
+                     spark-worker minio-oss postgres-db fastapi-server grafana-dashboard; do
+            echo "=== $svc ===" >> ci-logs/${svc}.log
+            docker logs $svc >> ci-logs/${svc}.log 2>&1 || true
+          done
+
+      - name: Upload Docker logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-service-logs
+          path: ci-logs/
+          retention-days: 7
+
+      # ── Always tear down the stack cleanly ───────────────────────────────────
+      - name: Teardown Docker stack
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+          docker image prune -f

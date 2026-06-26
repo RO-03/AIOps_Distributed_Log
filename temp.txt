@@ -1,0 +1,46 @@
+=================================== FAILURES ===================================
+______ TestKafkaOffsetIntegration.test_get_kafka_offset_returns_positive _______
+self = <tests.test_chaos_phase5.TestKafkaOffsetIntegration testMethod=test_get_kafka_offset_returns_positive>
+    def test_get_kafka_offset_returns_positive(self):
+        result = subprocess.run(
+            "docker exec kafka-1 kafka-run-class kafka.tools.GetOffsetShell "
+            "--broker-list kafka-1:29092 --topic system-logs --time -1",
+            shell=True, capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, f"GetOffsetShell failed: {result.stderr}")
+        total = 0
+        for line in result.stdout.strip().splitlines():
+            parts = line.strip().split(":")
+            if len(parts) == 3:
+                total += int(parts[2])
+>       self.assertGreater(total, 0, "system-logs topic has 0 messages — run Fluentd first")
+E       AssertionError: 0 not greater than 0 : system-logs topic has 0 messages — run Fluentd first
+tests/test_chaos_phase5.py:319: AssertionError
+=============================== warnings summary ===============================
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest
+  /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine '_wait_for_websocket_message' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest
+  /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/python3.12/tracemalloc.py:6: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    import pickle
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================================== PASSES ====================================
+___________ TestUnitKafkaFailoverLogic.test_result_has_required_keys ___________
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.kafka_failover:kafka_failover.py:197 No new controller elected within 60s
+______________ TestUnitDeltaSafetyLogic.test_corruption_detection ______________
+------------------------------ Captured log call -------------------------------
+ERROR    chaos.delta_safety:delta_safety.py:300 Corruption detected! version 5→4  rows 100→50
+______ TestUnitDeltaSafetyLogic.test_delta_state_fallback_on_fresh_deploy ______
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.delta_safety:delta_safety.py:216 Delta table not yet initialized or unreadable — run stream_processor first to populate it.
+WARNING  chaos.delta_safety:delta_safety.py:295 Delta table state unreadable after restart — marking as passed (Spark may still be initializing)
+__________ TestUnitLatencyProbeLogic.test_websocket_fallback_to_rest ___________
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.latency_probe:latency_probe.py:270 Probe NOT found in Kafka within 90s
+WARNING  chaos.latency_probe:latency_probe.py:294 No WebSocket message received — FastAPI may not have active alerts consumer. Checking REST endpoint instead…
+- generated xml file: /home/roshan/actions-runner-aiops/_work/AIOps_Distributed_Log/AIOps_Distributed_Log/test-results/integration-results.xml -
