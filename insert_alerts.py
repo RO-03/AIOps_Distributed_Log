@@ -9,7 +9,7 @@ def main():
             dbname="aiops_analytics",
             user="aiops_user",
             password="aiops_pg_2024",
-            host="postgres-db",
+            host="localhost",
             port="5432"
         )
         cur = conn.cursor()

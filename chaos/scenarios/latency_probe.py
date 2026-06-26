@@ -211,18 +211,30 @@ async def _wait_for_websocket_message(timeout: int) -> Optional[float]:
 
 
 def _check_fastapi_alerts() -> bool:
-    """Hit the REST endpoint and verify it returns ≥1 alert."""
+    """Hit the REST endpoint and verify it returns ≥1 alert.
+    Retries up to 3 times with a 2-second sleep to allow FastAPI's
+    async Kafka consumer time to consume and persist the alert to DB.
+    """
     import urllib.request
     import urllib.error
-    try:
-        with urllib.request.urlopen(FASTAPI_ALERTS_URL, timeout=5) as resp:
-            data = json.loads(resp.read().decode())
-            count = len(data) if isinstance(data, list) else data.get("count", 0)
-            log.info("FastAPI /api/v1/alerts/recent returned %s alert(s)", count)
-            return count > 0
-    except Exception as exc:
-        log.warning("FastAPI alerts endpoint error: %s", exc)
-        return False
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            with urllib.request.urlopen(FASTAPI_ALERTS_URL, timeout=5) as resp:
+                data = json.loads(resp.read().decode())
+                count = len(data) if isinstance(data, list) else data.get("count", 0)
+                log.info(
+                    "FastAPI /api/v1/alerts/recent returned %s alert(s) (attempt %d/%d)",
+                    count, attempt, max_attempts,
+                )
+                if count > 0:
+                    return True
+        except Exception as exc:
+            log.warning("FastAPI alerts endpoint error (attempt %d/%d): %s", attempt, max_attempts, exc)
+        if attempt < max_attempts:
+            log.info("No alerts yet — retrying in 2s…")
+            time.sleep(2)
+    return False
 
 
 def run() -> Dict:

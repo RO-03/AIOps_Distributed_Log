@@ -143,7 +143,8 @@ def read_kafka_stream(spark: SparkSession) -> DataFrame:
         F.coalesce(F.col("alert_code"), F.lit("-")).alias("alert_code"),
         F.to_timestamp(F.col("timestamp"), "yyyy-MM-dd-HH.mm.ss.SSSSSS").alias("event_time"),
         F.col("node_id").alias("host"),
-        F.col("component"),
+        # Fix: coalesce NULL component to 'UNKNOWN' so anomaly records are always labelled
+        F.coalesce(F.col("component"), F.lit("UNKNOWN")).alias("component"),
         F.col("severity"),
         F.col("message"),
         F.col("is_anomaly").cast(IntegerType()).alias("label_original"),
@@ -310,6 +311,127 @@ class BatchProcessor:
         except Exception as e:
             log.warning("PostgreSQL JDBC write failed: %s", e)
 
+    def _write_anomaly_alerts_pg(self, anomalies: DataFrame) -> None:
+        """
+        Directly persist anomaly rows into anomaly_alerts_pg via psycopg2.
+        This makes the table self-contained — no dependency on FastAPI's
+        Kafka consumer for DB writes. Works correctly on every Spark restart.
+        """
+        rows = anomalies.select(
+            "event_time", "component", "severity", "message",
+            "host", "anomaly_score", "cluster",
+        ).collect()
+
+        if not rows:
+            return
+
+        try:
+            conn = psycopg2.connect(
+                host="postgres-db",
+                port=5432,
+                dbname="aiops_analytics",
+                user=POSTGRES_USER,
+                password=POSTGRES_PASS,
+                connect_timeout=10,
+            )
+            cur = conn.cursor()
+            inserted = 0
+            for row in rows:
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO anomaly_alerts_pg
+                            (alert_id, event_time, component, severity, message,
+                             host, anomaly_score, cluster_id)
+                        VALUES (%s, %s::timestamptz, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT DO NOTHING
+                        """,
+                        (
+                            str(uuid.uuid4()),
+                            str(row["event_time"]) if row["event_time"] else None,
+                            row["component"],
+                            row["severity"],
+                            row["message"],
+                            row["host"],
+                            float(row["anomaly_score"]) if row["anomaly_score"] is not None else None,
+                            int(row["cluster"]) if row["cluster"] is not None else None,
+                        ),
+                    )
+                    inserted += 1
+                except Exception as row_err:
+                    log.warning("anomaly_alerts_pg row insert failed: %s", row_err)
+            conn.commit()
+            cur.close()
+            conn.close()
+            log.info("anomaly_alerts_pg: inserted %d anomaly rows", inserted)
+        except Exception as e:
+            log.error("anomaly_alerts_pg bulk insert failed: %s", e)
+
+    def _update_component_health(self, df: DataFrame) -> None:
+        """
+        UPSERT per-component health stats into component_health.
+        Keeps the Component Health Heatmap dashboard populated on every batch.
+        """
+        rows = df.groupBy("component").agg(
+            F.count("*").alias("total_events"),
+            F.sum(F.col("is_anomaly").cast(IntegerType())).alias("total_anomalies"),
+            F.max("event_time").alias("last_seen"),
+        ).collect()
+
+        if not rows:
+            return
+
+        try:
+            conn = psycopg2.connect(
+                host="postgres-db",
+                port=5432,
+                dbname="aiops_analytics",
+                user=POSTGRES_USER,
+                password=POSTGRES_PASS,
+                connect_timeout=10,
+            )
+            cur = conn.cursor()
+            for row in rows:
+                total_ev = int(row["total_events"]) or 0
+                total_an = int(row["total_anomalies"]) or 0
+                error_rate = round((total_an / total_ev * 100), 2) if total_ev > 0 else 0.0
+                # Derive status from error_rate
+                if error_rate > 10:
+                    status = "critical"
+                elif error_rate > 2:
+                    status = "warning"
+                else:
+                    status = "healthy"
+                cur.execute(
+                    """
+                    INSERT INTO component_health
+                        (component, total_events, total_anomalies, error_rate_pct,
+                         last_seen, status, updated_at)
+                    VALUES (%s, %s, %s, %s, %s::timestamptz, %s, now())
+                    ON CONFLICT (component) DO UPDATE SET
+                        total_events    = component_health.total_events    + EXCLUDED.total_events,
+                        total_anomalies = component_health.total_anomalies + EXCLUDED.total_anomalies,
+                        error_rate_pct  = EXCLUDED.error_rate_pct,
+                        last_seen       = GREATEST(component_health.last_seen, EXCLUDED.last_seen),
+                        status          = EXCLUDED.status,
+                        updated_at      = now()
+                    """,
+                    (
+                        row["component"],
+                        total_ev,
+                        total_an,
+                        error_rate,
+                        str(row["last_seen"]) if row["last_seen"] else None,
+                        status,
+                    ),
+                )
+            conn.commit()
+            cur.close()
+            conn.close()
+            log.info("component_health: upserted %d component rows", len(rows))
+        except Exception as e:
+            log.error("component_health upsert failed: %s", e)
+
     # ── Main batch handler ────────────────────────────────────────────────────
 
     def process(self, batch_df: DataFrame, batch_id: int) -> None:
@@ -391,9 +513,22 @@ class BatchProcessor:
         # ── Sync Path: PostgreSQL aggregation ─────────────────────────────────
         try:
             self._write_postgres(processed)
-            log.info("Batch %d: PostgreSQL metrics updated", batch_id)
+            log.info("Batch %d: PostgreSQL batch_metrics updated", batch_id)
         except Exception as e:
-            log.warning("PostgreSQL write failed (non-fatal): %s", e)
+            log.warning("PostgreSQL batch_metrics write failed (non-fatal): %s", e)
+
+        # ── Direct anomaly_alerts_pg insert (independent of FastAPI consumer) ──
+        try:
+            anomalies_for_pg = processed.filter(F.col("is_anomaly") == 1)
+            self._write_anomaly_alerts_pg(anomalies_for_pg)
+        except Exception as e:
+            log.warning("anomaly_alerts_pg write failed (non-fatal): %s", e)
+
+        # ── Component health UPSERT ────────────────────────────────────────────
+        try:
+            self._update_component_health(processed)
+        except Exception as e:
+            log.warning("component_health update failed (non-fatal): %s", e)
 
         batch_df.unpersist()
 

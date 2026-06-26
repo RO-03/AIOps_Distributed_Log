@@ -1,20 +1,21 @@
 [
   {
-    "passed": true,
+    "passed": false,
     "checks": {
       "probe_injected_to_log": true,
       "probe_found_in_kafka": true,
       "kafka_probe_published_to_alerts": true,
       "websocket_delivered_message": true,
       "websocket_latency_within_target": true,
-      "fastapi_rest_returns_alerts": true
+      "fastapi_rest_returns_alerts": false
     },
     "metrics": {
-      "probe_id": "c68cf179",
-      "fluentd_to_kafka_ms": 3963797.8,
-      "kafka_to_websocket_ms": "timeout"
+      "probe_id": "764fce80",
+      "fluentd_to_kafka_ms": 2198.0,
+      "kafka_to_websocket_ms": 98.8,
+      "total_e2e_ms": 2296.8
     },
-    "elapsed_s": 3965.7,
+    "elapsed_s": 5.24,
     "label": "5.4 End-to-End Latency Validation"
   }
 ]

@@ -69,7 +69,7 @@
           "refId": "A"
         }
       ],
-      "title": "Anomalies per Hour by Severity (7d)",
+      "title": "Anomalies per Hour by Severity",
       "type": "timeseries"
     },
     {
@@ -108,7 +108,7 @@
           "refId": "A"
         }
       ],
-      "title": "Anomalies by Component (7d)",
+      "title": "Anomalies by Component",
       "type": "timeseries"
     },
     {
@@ -145,7 +145,7 @@
           "refId": "A"
         }
       ],
-      "title": "Alert Severity Distribution (7d)",
+      "title": "Alert Severity Distribution",
       "type": "piechart"
     },
     {
@@ -208,7 +208,7 @@
   "schemaVersion": 38,
   "tags": ["aiops", "phase4", "anomaly-timeline"],
   "templating": { "list": [] },
-  "time": { "from": "now-7d", "to": "now" },
+  "time": { "from": "2005-01-01T00:00:00.000Z", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "AIOps — Anomaly Timeline",

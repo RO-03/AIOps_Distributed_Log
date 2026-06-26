@@ -231,7 +231,7 @@
   "schemaVersion": 38,
   "tags": ["aiops", "phase4", "component-health"],
   "templating": { "list": [] },
-  "time": { "from": "now-30d", "to": "now" },
+  "time": { "from": "2005-01-01T00:00:00.000Z", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "AIOps — Component Health Heatmap",
