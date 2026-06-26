@@ -250,7 +250,7 @@ def run() -> Dict:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    log.info("Streaming job submitted (PID %d). Waiting %ds before killing master…",
+    log.info("Streaming job submitted (PID %s). Waiting %ds before killing master…",
              proc.pid, KILL_DELAY_SECONDS)
     time.sleep(KILL_DELAY_SECONDS)
 

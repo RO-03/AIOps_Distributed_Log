@@ -17,7 +17,6 @@ Run python -m pytest tests/test_chaos_phase5.py \
     Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
     Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
     LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
-  
 ============================= test session starts ==============================
 collecting ... collected 26 items
 tests/test_chaos_phase5.py::TestPreflight::test_containers_running PASSED [  3%]
@@ -33,21 +32,91 @@ tests/test_chaos_phase5.py::TestPreflight::test_spark_master_reachable PASSED [ 
 tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_offset_parsing PASSED [ 42%]
 tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_result_structure PASSED [ 46%]
 tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_node_id_to_container_mapping PASSED [ 50%]
-3s
-Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
-Run actions/upload-artifact@v4
-(node:3608) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-With the provided path, there will be 1 file uploaded
-Artifact name is valid!
-Root directory input is valid!
-Beginning upload of artifact content to blob storage
-(node:3608) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
-Uploaded bytes 1291
-Finished uploading artifact content to blob storage!
-SHA256 digest of uploaded artifact zip is e9dc1d7961233e6cdeb9883b031b73b7eed33c80b024d5dca2332288ec1e1138
-Finalizing artifact upload
-Artifact integration-test-results.zip successfully finalized. Artifact ID 7904029411
-Artifact integration-test-results has been successfully uploaded! Final size is 1291 bytes. Artifact ID is 7904029411
-Artifact download URL: https://github.com/RO-03/AIOps_Distributed_Log/actions/runs/28233149352/artifacts/7904029411
-0s
+tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_result_has_required_keys PASSED [ 53%]
+tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_survivors_exclude_killed PASSED [ 57%]
+tests/test_chaos_phase5.py::TestUnitDeltaSafetyLogic::test_corruption_detection PASSED [ 61%]
+tests/test_chaos_phase5.py::TestUnitDeltaSafetyLogic::test_delta_state_fallback_on_fresh_deploy PASSED [ 65%]
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_probe_id_is_unique PASSED [ 69%]
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_result_structure_all_pass PASSED [ 73%]
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest PASSED [ 76%]
+tests/test_chaos_phase5.py::TestKafkaOffsetIntegration::test_get_kafka_offset_returns_positive FAILED [ 80%]
+tests/test_chaos_phase5.py::TestFastAPIIntegration::test_alerts_endpoint_responds PASSED [ 84%]
+tests/test_chaos_phase5.py::TestFastAPIIntegration::test_health_endpoint PASSED [ 88%]
+tests/test_chaos_phase5.py::TestFastAPIIntegration::test_metrics_endpoint_responds PASSED [ 92%]
+tests/test_chaos_phase5.py::TestChaosRunnerImport::test_all_scenario_modules_importable PASSED [ 96%]
+tests/test_chaos_phase5.py::TestChaosRunnerImport::test_module_imports PASSED [100%]
+=================================== FAILURES ===================================
+______ TestKafkaOffsetIntegration.test_get_kafka_offset_returns_positive _______
+self = <tests.test_chaos_phase5.TestKafkaOffsetIntegration testMethod=test_get_kafka_offset_returns_positive>
+    def test_get_kafka_offset_returns_positive(self):
+        result = subprocess.run(
+            "docker exec kafka-1 kafka-run-class kafka.tools.GetOffsetShell "
+            "--broker-list kafka-1:29092 --topic system-logs --time -1",
+            shell=True, capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, f"GetOffsetShell failed: {result.stderr}")
+        total = 0
+        for line in result.stdout.strip().splitlines():
+            parts = line.strip().split(":")
+            if len(parts) == 3:
+                total += int(parts[2])
+>       self.assertGreater(total, 0, "system-logs topic has 0 messages — run Fluentd first")
+E       AssertionError: 0 not greater than 0 : system-logs topic has 0 messages — run Fluentd first
+tests/test_chaos_phase5.py:319: AssertionError
+=============================== warnings summary ===============================
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest
+  /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine '_wait_for_websocket_message' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest
+  /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/python3.12/tracemalloc.py:6: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    import pickle
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================================== PASSES ====================================
+___________ TestUnitKafkaFailoverLogic.test_result_has_required_keys ___________
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.kafka_failover:kafka_failover.py:197 No new controller elected within 60s
+______________ TestUnitDeltaSafetyLogic.test_corruption_detection ______________
+------------------------------ Captured log call -------------------------------
+ERROR    chaos.delta_safety:delta_safety.py:300 Corruption detected! version 5→4  rows 100→50
+______ TestUnitDeltaSafetyLogic.test_delta_state_fallback_on_fresh_deploy ______
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.delta_safety:delta_safety.py:216 Delta table not yet initialized or unreadable — run stream_processor first to populate it.
+WARNING  chaos.delta_safety:delta_safety.py:295 Delta table state unreadable after restart — marking as passed (Spark may still be initializing)
+__________ TestUnitLatencyProbeLogic.test_websocket_fallback_to_rest ___________
+------------------------------ Captured log call -------------------------------
+WARNING  chaos.latency_probe:latency_probe.py:270 Probe NOT found in Kafka within 90s
+WARNING  chaos.latency_probe:latency_probe.py:294 No WebSocket message received — FastAPI may not have active alerts consumer. Checking REST endpoint instead…
+- generated xml file: /home/roshan/actions-runner-aiops/_work/AIOps_Distributed_Log/AIOps_Distributed_Log/test-results/integration-results.xml -
+=========================== short test summary info ============================
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_containers_running
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_fastapi_health
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_grafana_health
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_kafka_1_reachable
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_kafka_2_reachable
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_kafka_3_reachable
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_kafka_topics_exist
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_minio_reachable
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_postgres_reachable
+PASSED tests/test_chaos_phase5.py::TestPreflight::test_spark_master_reachable
+PASSED tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_offset_parsing
+PASSED tests/test_chaos_phase5.py::TestUnitFluentdCrashLogic::test_result_structure
+PASSED tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_node_id_to_container_mapping
+PASSED tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_result_has_required_keys
+PASSED tests/test_chaos_phase5.py::TestUnitKafkaFailoverLogic::test_survivors_exclude_killed
+PASSED tests/test_chaos_phase5.py::TestUnitDeltaSafetyLogic::test_corruption_detection
+PASSED tests/test_chaos_phase5.py::TestUnitDeltaSafetyLogic::test_delta_state_fallback_on_fresh_deploy
+PASSED tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_probe_id_is_unique
+PASSED tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_result_structure_all_pass
+PASSED tests/test_chaos_phase5.py::TestUnitLatencyProbeLogic::test_websocket_fallback_to_rest
+PASSED tests/test_chaos_phase5.py::TestFastAPIIntegration::test_alerts_endpoint_responds
+PASSED tests/test_chaos_phase5.py::TestFastAPIIntegration::test_health_endpoint
+PASSED tests/test_chaos_phase5.py::TestFastAPIIntegration::test_metrics_endpoint_responds
+PASSED tests/test_chaos_phase5.py::TestChaosRunnerImport::test_all_scenario_modules_importable
+PASSED tests/test_chaos_phase5.py::TestChaosRunnerImport::test_module_imports
+FAILED tests/test_chaos_phase5.py::TestKafkaOffsetIntegration::test_get_kafka_offset_returns_positive - AssertionError: 0 not greater than 0 : system-logs topic has 0 messages — run Fluentd first
+============= 1 failed, 25 passed, 2 warnings in 155.12s (0:02:35) =============
+Error: Process completed with exit code 1.
