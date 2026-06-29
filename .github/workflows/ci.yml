@@ -21,13 +21,10 @@ name: AIOps CI Pipeline
 on:
   push:
     branches:
-      - main
-      - ro9_ci      
+      - main      
   pull_request:
     branches:
-      - main
-      - ro9_ci
-      
+      - main      
 
 # Cancel any in-progress run for the same branch on a new push
 concurrency:
