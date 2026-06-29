@@ -274,7 +274,7 @@
           "datasource": { "type": "postgres", "uid": "aiops-postgres" },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT 'Total Evaluated' AS metric, total_count AS value FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1 UNION ALL SELECT 'Batches Logged', COUNT(*)::bigint FROM model_metrics;",
+          "rawSql": "(SELECT 'Total Evaluated' AS metric, total_count AS value FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1) UNION ALL SELECT 'Batches Logged', COUNT(*)::bigint FROM model_metrics;",
           "refId": "A"
         }
       ],
