@@ -432,6 +432,87 @@ class BatchProcessor:
         except Exception as e:
             log.error("component_health upsert failed: %s", e)
 
+    def _write_model_metrics(self, processed: DataFrame, batch_id: int) -> None:
+        """
+        Compute classification quality metrics by comparing KMeans predictions
+        (is_anomaly) against the embedded ground-truth label (label_original).
+
+        Metrics written to model_metrics table:
+          - Accuracy  = (TP + TN) / total
+          - Precision = TP / (TP + FP)   — of predicted anomalies, how many real?
+          - Recall    = TP / (TP + FN)   — of real anomalies, how many caught?
+          - F1        = 2 * P * R / (P + R)
+        """
+        # Only evaluate rows where ground truth exists
+        eval_df = processed.filter(
+            F.col("label_original").isNotNull()
+        )
+        total = eval_df.count()
+        if total == 0:
+            log.info("Batch %d: no labelled rows — skipping model_metrics", batch_id)
+            return
+
+        # Compute confusion matrix counts via Spark aggregation
+        cm = eval_df.agg(
+            F.sum(
+                F.when((F.col("is_anomaly") == 1) & (F.col("label_original") == 1), 1).otherwise(0)
+            ).alias("tp"),
+            F.sum(
+                F.when((F.col("is_anomaly") == 1) & (F.col("label_original") == 0), 1).otherwise(0)
+            ).alias("fp"),
+            F.sum(
+                F.when((F.col("is_anomaly") == 0) & (F.col("label_original") == 0), 1).otherwise(0)
+            ).alias("tn"),
+            F.sum(
+                F.when((F.col("is_anomaly") == 0) & (F.col("label_original") == 1), 1).otherwise(0)
+            ).alias("fn"),
+        ).collect()[0]
+
+        tp = int(cm["tp"] or 0)
+        fp = int(cm["fp"] or 0)
+        tn = int(cm["tn"] or 0)
+        fn = int(cm["fn"] or 0)
+
+        accuracy  = (tp + tn) / total if total > 0 else 0.0
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1        = (2 * precision * recall / (precision + recall)
+                     if (precision + recall) > 0 else 0.0)
+
+        log.info(
+            "Batch %d — Model Metrics | total=%d | Acc=%.4f | P=%.4f | R=%.4f | F1=%.4f "
+            "| TP=%d FP=%d TN=%d FN=%d",
+            batch_id, total, accuracy, precision, recall, f1, tp, fp, tn, fn,
+        )
+
+        try:
+            conn = psycopg2.connect(
+                host="postgres-db",
+                port=5432,
+                dbname="aiops_analytics",
+                user=POSTGRES_USER,
+                password=POSTGRES_PASS,
+                connect_timeout=10,
+            )
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO model_metrics
+                    (batch_id, total_count, accuracy, precision_score,
+                     recall_score, f1_score,
+                     true_positives, false_positives, true_negatives, false_negatives)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (batch_id, total, accuracy, precision, recall, f1,
+                 tp, fp, tn, fn),
+            )
+            conn.commit()
+            cur.close()
+            conn.close()
+            log.info("Batch %d: model_metrics row inserted", batch_id)
+        except Exception as e:
+            log.error("model_metrics DB insert failed: %s", e)
+
     # ── Main batch handler ────────────────────────────────────────────────────
 
     def process(self, batch_df: DataFrame, batch_id: int) -> None:
@@ -485,6 +566,8 @@ class BatchProcessor:
             F.col("cluster"),
             F.when(F.col("cluster") == anomaly_cluster, 1).otherwise(0).alias("is_anomaly"),
             F.when(F.col("cluster") == anomaly_cluster, 1.0).otherwise(0.0).alias("anomaly_score"),
+            # Keep ground-truth label so we can evaluate prediction quality
+            F.col("label_original"),
             F.col("ingested_at"),
             F.current_timestamp().alias("processed_at"),
         )
@@ -529,6 +612,12 @@ class BatchProcessor:
             self._update_component_health(processed)
         except Exception as e:
             log.warning("component_health update failed (non-fatal): %s", e)
+
+        # ── MLOps: Write classification metrics to model_metrics ───────────────
+        try:
+            self._write_model_metrics(processed, batch_id)
+        except Exception as e:
+            log.warning("model_metrics write failed (non-fatal): %s", e)
 
         batch_df.unpersist()
 

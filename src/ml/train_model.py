@@ -141,6 +141,51 @@ def train(spark: SparkSession, df):
         {r["cluster"]: r["count"] for r in cluster_sizes},
     )
 
+    # ── Offline classification evaluation (when ground truth is available) ───
+    if "is_anomaly" in [f.name for f in df.schema.fields]:
+        log.info("Evaluating model predictions against ground-truth 'is_anomaly' labels...")
+        eval_df = predictions.withColumn(
+            "predicted",
+            (predictions["cluster"] == anomaly_cluster).cast("int"),
+        ).filter(predictions["is_anomaly"].isNotNull())
+
+        total = eval_df.count()
+        if total > 0:
+            from pyspark.sql.functions import when, sum as _sum, col
+            cm_row = eval_df.agg(
+                _sum(when((col("predicted") == 1) & (col("is_anomaly") == 1), 1).otherwise(0)).alias("tp"),
+                _sum(when((col("predicted") == 1) & (col("is_anomaly") == 0), 1).otherwise(0)).alias("fp"),
+                _sum(when((col("predicted") == 0) & (col("is_anomaly") == 0), 1).otherwise(0)).alias("tn"),
+                _sum(when((col("predicted") == 0) & (col("is_anomaly") == 1), 1).otherwise(0)).alias("fn"),
+            ).collect()[0]
+            tp, fp, tn, fn = (
+                int(cm_row["tp"] or 0), int(cm_row["fp"] or 0),
+                int(cm_row["tn"] or 0), int(cm_row["fn"] or 0),
+            )
+            accuracy  = (tp + tn) / total
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            f1        = (2 * precision * recall / (precision + recall)
+                         if (precision + recall) > 0 else 0.0)
+            log.info("=" * 55)
+            log.info("  OFFLINE MODEL EVALUATION REPORT")
+            log.info("  Total evaluated samples : %d", total)
+            log.info("  Accuracy                : %.4f  (%.2f%%)", accuracy, accuracy * 100)
+            log.info("  Precision               : %.4f", precision)
+            log.info("  Recall                  : %.4f", recall)
+            log.info("  F1-Score                : %.4f", f1)
+            log.info("  Confusion Matrix:")
+            log.info("    True Positives  (TP)  : %d", tp)
+            log.info("    False Positives (FP)  : %d", fp)
+            log.info("    True Negatives  (TN)  : %d", tn)
+            log.info("    False Negatives (FN)  : %d", fn)
+            log.info("  KMeans Silhouette Score : %.4f", silhouette)
+            log.info("=" * 55)
+        else:
+            log.warning("No rows with ground-truth labels found for evaluation.")
+    else:
+        log.info("No 'is_anomaly' column in training data — skipping evaluation.")
+
     return nlp_model, km_model, anomaly_cluster
 
 
