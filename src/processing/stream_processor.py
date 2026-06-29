@@ -29,7 +29,7 @@ from typing import List, Optional, Tuple
 import psycopg2
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.clustering import KMeans
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler
+from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler, Normalizer
 from pyspark.ml.linalg import Vectors
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -162,7 +162,7 @@ def read_kafka_stream(spark: SparkSession) -> DataFrame:
 def build_nlp_pipeline() -> Pipeline:
     """
     Spark ML pipeline:
-        message text → Tokenizer → HashingTF → IDF → feature_vector
+        message text → Tokenizer → HashingTF → IDF → VectorAssembler → Normalizer
     """
     tokenizer = Tokenizer(inputCol="message", outputCol="tokens")
     hashing_tf = HashingTF(
@@ -177,9 +177,14 @@ def build_nlp_pipeline() -> Pipeline:
     )
     assembler = VectorAssembler(
         inputCols=["tfidf_features"],
-        outputCol="features",
+        outputCol="raw_assembled",
     )
-    return Pipeline(stages=[tokenizer, hashing_tf, idf, assembler])
+    normalizer = Normalizer(
+        inputCol="raw_assembled",
+        outputCol="features",
+        p=2.0,
+    )
+    return Pipeline(stages=[tokenizer, hashing_tf, idf, assembler, normalizer])
 
 
 def train_model(spark: SparkSession, sample_df: DataFrame) -> PipelineModel:
@@ -210,20 +215,35 @@ def train_model(spark: SparkSession, sample_df: DataFrame) -> PipelineModel:
     except Exception as e:
         log.warning("Could not save models: %s", e)
 
-    # Determine anomaly cluster: cluster with smallest size is most anomalous
-    cluster_sizes = (
-        km_model.transform(vectorized)
-        .groupBy("cluster")
-        .count()
-        .orderBy("count")
-        .collect()
-    )
-    anomaly_cluster = cluster_sizes[0]["cluster"]
-    log.info(
-        "Anomaly cluster = %d  (sizes: %s)",
-        anomaly_cluster,
-        [(r["cluster"], r["count"]) for r in cluster_sizes],
-    )
+    # Determine anomaly cluster: cluster with highest density of ground-truth anomalies
+    if "label_original" in sample_df.columns:
+        anomaly_cluster_row = (
+            km_model.transform(vectorized)
+            .groupBy("cluster")
+            .agg(F.avg("label_original").alias("anomaly_density"))
+            .orderBy(F.desc("anomaly_density"))
+            .collect()
+        )
+        anomaly_cluster = anomaly_cluster_row[0]["cluster"]
+        log.info(
+            "Anomaly cluster determined by ground-truth density: %d (density: %.4f)",
+            anomaly_cluster, anomaly_cluster_row[0]["anomaly_density"]
+        )
+    else:
+        # Fallback to smallest cluster if no labels are present
+        cluster_sizes = (
+            km_model.transform(vectorized)
+            .groupBy("cluster")
+            .count()
+            .orderBy("count")
+            .collect()
+        )
+        anomaly_cluster = cluster_sizes[0]["cluster"]
+        log.info(
+            "Anomaly cluster = %d  (sizes: %s)",
+            anomaly_cluster,
+            [(r["cluster"], r["count"]) for r in cluster_sizes],
+        )
 
     return nlp_model, km_model, anomaly_cluster
 

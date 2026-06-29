@@ -21,7 +21,7 @@ import sys
 
 from pyspark.ml import Pipeline
 from pyspark.ml.clustering import KMeans
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler
+from pyspark.ml.feature import HashingTF, IDF, Tokenizer, VectorAssembler, Normalizer
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -98,9 +98,10 @@ def train(spark: SparkSession, df):
         numFeatures=TF_NUM_FEATURES,
     )
     idf = IDF(inputCol="raw_features", outputCol="tfidf_features", minDocFreq=2)
-    assembler = VectorAssembler(inputCols=["tfidf_features"], outputCol="features")
+    assembler = VectorAssembler(inputCols=["tfidf_features"], outputCol="raw_assembled")
+    normalizer = Normalizer(inputCol="raw_assembled", outputCol="features", p=2.0)
 
-    nlp_pipeline = Pipeline(stages=[tokenizer, hashing_tf, idf, assembler])
+    nlp_pipeline = Pipeline(stages=[tokenizer, hashing_tf, idf, assembler, normalizer])
 
     log.info("Fitting NLP pipeline...")
     nlp_model = nlp_pipeline.fit(df)
@@ -127,19 +128,33 @@ def train(spark: SparkSession, df):
     silhouette = evaluator.evaluate(predictions)
     log.info("KMeans silhouette score: %.4f", silhouette)
 
-    # Find anomaly cluster (smallest cluster = outlier / anomaly)
-    cluster_sizes = (
-        predictions.groupBy("cluster")
-        .count()
-        .orderBy("count")
-        .collect()
-    )
-    anomaly_cluster = cluster_sizes[0]["cluster"]
-    log.info(
-        "Anomaly cluster = %d  (all cluster sizes: %s)",
-        anomaly_cluster,
-        {r["cluster"]: r["count"] for r in cluster_sizes},
-    )
+    # Determine anomaly cluster: cluster with highest density of ground-truth anomalies
+    if "is_anomaly" in df.columns:
+        anomaly_cluster_row = (
+            predictions.groupBy("cluster")
+            .agg(F.avg("is_anomaly").alias("anomaly_density"))
+            .orderBy(F.desc("anomaly_density"))
+            .collect()
+        )
+        anomaly_cluster = anomaly_cluster_row[0]["cluster"]
+        log.info(
+            "Anomaly cluster determined by ground-truth density: %d (density: %.4f)",
+            anomaly_cluster, anomaly_cluster_row[0]["anomaly_density"]
+        )
+    else:
+        # Fallback to smallest cluster
+        cluster_sizes = (
+            predictions.groupBy("cluster")
+            .count()
+            .orderBy("count")
+            .collect()
+        )
+        anomaly_cluster = cluster_sizes[0]["cluster"]
+        log.info(
+            "Anomaly cluster = %d  (all cluster sizes: %s)",
+            anomaly_cluster,
+            {r["cluster"]: r["count"] for r in cluster_sizes},
+        )
 
     # ── Offline classification evaluation (when ground truth is available) ───
     if "is_anomaly" in [f.name for f in df.schema.fields]:
