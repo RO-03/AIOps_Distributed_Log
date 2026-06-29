@@ -259,6 +259,14 @@ jobs:
           echo "Spark job submitted. Waiting 15s for initialization..."
           sleep 15
 
+      # ── Restart Log Generator to produce fresh stream of logs ─────────────────
+      # This guarantees Spark (reading from 'latest' offset) gets fresh log data
+      # for Batch 1 and Batch 2, triggering model training and model_metrics insert.
+      - name: Restart log generator
+        run: |
+          echo "Restarting log-generator..."
+          docker compose restart log-generator
+
       # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
       - name: Verify model_metrics populated
         run: |
