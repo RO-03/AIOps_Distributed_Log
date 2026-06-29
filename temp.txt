@@ -1,22 +1,99 @@
-26/06/29 09:36:01 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 40129, None)
-26/06/29 09:36:01 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629093601-0001/0 is now RUNNING
-26/06/29 09:36:01 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
-2026-06-29 09:36:04,761 [INFO] py4j.java_gateway — Callback Server Starting
-2026-06-29 09:36:04,761 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 45211)
-26/06/29 09:36:05 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
-26/06/29 09:36:07 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
-2026-06-29 09:36:08,271 [INFO] stream_processor — Streaming query started. Awaiting termination...
-26/06/29 09:36:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
-2026-06-29 09:36:10,546 [INFO] py4j.clientserver — Python Server ready to receive messages
-2026-06-29 09:36:10,546 [INFO] py4j.clientserver — Received command c on object id p0
-2026-06-29 09:36:12,566 [INFO] stream_processor — Batch 0: 0 rows received
-2026-06-29 09:36:12,566 [INFO] stream_processor — Batch 0: empty, skipping
-0s
+═
+21s
+Run python scripts/submit_spark_job.py --job stream_processor &
+  python scripts/submit_spark_job.py --job stream_processor &
+  echo "Spark job submitted. Waiting 15s for initialization..."
+  sleep 15
+  shell: /usr/bin/bash -e {0}
+  env:
+    PYTHON_VERSION: 3.12
+    PIP_CACHE_DIR: ~/.cache/pip
+    PYTHONUNBUFFERED: 1
+    COMPOSE_HTTP_TIMEOUT: 120
+    DOCKER_BUILDKIT: 1
+    pythonLocation: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    PKG_CONFIG_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/pkgconfig
+    Python_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
+Spark job submitted. Waiting 15s for initialization...
+2026-06-29 10:04:04,689 [INFO] Copying src/ to spark-master:/app ...
+2026-06-29 10:04:04,724 [INFO] Source files copied successfully.
+2026-06-29 10:04:04,724 [INFO] Submitting: Phase 3 — PySpark Structured Streaming + ML Inference
+2026-06-29 10:04:04,724 [INFO] Running: docker exec spark-master spark-submit --master spark://spark-master:7077 --jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar,/opt/spark/jars/delta-spark_2.12-3.0.0.jar,/opt/spark/jars/delta-storage-3.0.0.jar,/opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog --conf spark.hadoop.fs.s3a.endpoint=http://minio-oss:9000 --conf spark.hadoop.fs.s3a.path.style.access=true --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem --conf spark.hadoop.fs.s3a.access.key=aiops_admin --conf spark.hadoop.fs.s3a.secret.key=aiops_secret_2024 --con
+26/06/29 10:04:07 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2026-06-29 10:04:09,180 [INFO] stream_processor — ════════════════════════════════════════════════════════════
+2026-06-29 10:04:09,180 [INFO] stream_processor — AIOps Stream Processor — Phase 3
+2026-06-29 10:04:09,180 [INFO] stream_processor — Source topic : system-logs
+2026-06-29 10:04:09,181 [INFO] stream_processor — Alert topic  : critical-alerts
+2026-06-29 10:04:09,181 [INFO] stream_processor — Lakehouse    : s3a://telemetry-lakehouse
+2026-06-29 10:04:09,181 [INFO] stream_processor — ════════════════════════════════════════════════════════════
+26/06/29 10:04:09 INFO SparkContext: Running Spark version 3.5.0
+26/06/29 10:04:09 INFO SparkContext: OS info Linux, 6.6.114.1-microsoft-standard-WSL2, amd64
+26/06/29 10:04:09 INFO SparkContext: Java version 11.0.20.1
+26/06/29 10:04:09 INFO ResourceUtils: ==============================================================
+26/06/29 10:04:09 INFO ResourceUtils: No custom resources configured for spark.driver.
+26/06/29 10:04:09 INFO ResourceUtils: ==============================================================
+26/06/29 10:04:09 INFO SparkContext: Submitted application: AIOps-StreamProcessor
+26/06/29 10:04:09 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+26/06/29 10:04:09 INFO ResourceProfile: Limiting resource is cpu
+26/06/29 10:04:09 INFO ResourceProfileManager: Added ResourceProfile id: 0
+26/06/29 10:04:09 INFO SecurityManager: Changing view acls to: spark
+26/06/29 10:04:09 INFO SecurityManager: Changing modify acls to: spark
+26/06/29 10:04:09 INFO SecurityManager: Changing view acls groups to: 
+26/06/29 10:04:09 INFO SecurityManager: Changing modify acls groups to: 
+26/06/29 10:04:09 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+26/06/29 10:04:09 INFO Utils: Successfully started service 'sparkDriver' on port 45339.
+26/06/29 10:04:09 INFO SparkEnv: Registering MapOutputTracker
+26/06/29 10:04:09 INFO SparkEnv: Registering BlockManagerMaster
+26/06/29 10:04:09 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+26/06/29 10:04:09 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+26/06/29 10:04:09 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+26/06/29 10:04:09 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-cc2d88f8-bba6-4172-9aee-f5aaea5527fa
+26/06/29 10:04:09 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
+26/06/29 10:04:09 INFO SparkEnv: Registering OutputCommitCoordinator
+26/06/29 10:04:10 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
+26/06/29 10:04:10 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar at spark://spark-master:45339/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar at spark://spark-master:45339/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/kafka-clients-3.4.1.jar at spark://spark-master:45339/jars/kafka-clients-3.4.1.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/commons-pool2-2.11.1.jar at spark://spark-master:45339/jars/commons-pool2-2.11.1.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/postgresql-42.7.1.jar at spark://spark-master:45339/jars/postgresql-42.7.1.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/delta-spark_2.12-3.0.0.jar at spark://spark-master:45339/jars/delta-spark_2.12-3.0.0.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/delta-storage-3.0.0.jar at spark://spark-master:45339/jars/delta-storage-3.0.0.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/hadoop-aws-3.3.4.jar at spark://spark-master:45339/jars/hadoop-aws-3.3.4.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO SparkContext: Added JAR file:///opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar at spark://spark-master:45339/jars/aws-java-sdk-bundle-1.12.262.jar with timestamp 1782727449275
+26/06/29 10:04:10 INFO StandaloneAppClient$ClientEndpoint: Connecting to master spark://spark-master:7077...
+26/06/29 10:04:10 INFO TransportClientFactory: Successfully created connection to spark-master/172.20.0.3:7077 after 43 ms (0 ms spent in bootstraps)
+26/06/29 10:04:10 INFO StandaloneSchedulerBackend: Connected to Spark cluster with app ID app-20260629100410-0001
+26/06/29 10:04:10 INFO StandaloneAppClient$ClientEndpoint: Executor added: app-20260629100410-0001/0 on worker-20260629100223-172.20.0.9-32825 (172.20.0.9:32825) with 6 core(s)
+26/06/29 10:04:10 INFO StandaloneSchedulerBackend: Granted executor ID app-20260629100410-0001/0 on hostPort 172.20.0.9:32825 with 6 core(s), 1024.0 MiB RAM
+26/06/29 10:04:10 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 42597.
+26/06/29 10:04:10 INFO NettyBlockTransferService: Server created on spark-master:42597
+26/06/29 10:04:10 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+26/06/29 10:04:10 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, spark-master, 42597, None)
+26/06/29 10:04:10 INFO BlockManagerMasterEndpoint: Registering block manager spark-master:42597 with 434.4 MiB RAM, BlockManagerId(driver, spark-master, 42597, None)
+26/06/29 10:04:10 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, spark-master, 42597, None)
+26/06/29 10:04:10 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 42597, None)
+26/06/29 10:04:10 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629100410-0001/0 is now RUNNING
+26/06/29 10:04:11 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
+2026-06-29 10:04:14,396 [INFO] py4j.java_gateway — Callback Server Starting
+2026-06-29 10:04:14,396 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 45395)
+26/06/29 10:04:14 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
+26/06/29 10:04:16 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+2026-06-29 10:04:16,929 [INFO] stream_processor — Streaming query started. Awaiting termination...
+26/06/29 10:04:17 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+2026-06-29 10:04:20,216 [INFO] py4j.clientserver — Python Server ready to receive messages
+2026-06-29 10:04:20,216 [INFO] py4j.clientserver — Received command c on object id p0
+2026-06-29 10:04:22,732 [INFO] stream_processor — Batch 0: 0 rows received
+2026-06-29 10:04:22,732 [INFO] stream_processor — Batch 0: empty, skipping
+1s
 Run echo "Restarting log-generator..."
 Restarting log-generator...
  Container log-generator Restarting 
  Container log-generator Started 
-3m 27s
+4m 2s
 Run echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
 Waiting for Spark stream to process the first batch and write to model_metrics...
 Attempt 1/24: model_metrics row count = 0
@@ -31,50 +108,230 @@ grafana-dashboard   grafana/grafana:10.2.0                 "/run.sh"            
 kafka-1             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-1             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
 kafka-2             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-2             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9094->9092/tcp, [::]:9094->9092/tcp
 kafka-3             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-3             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9096->9092/tcp, [::]:9096->9092/tcp
-log-generator       aiops_distributed_log-log-generator    "python /app/log_rep…"   log-generator       2 minutes ago   Restarting (1) 2 seconds ago   
+log-generator       aiops_distributed_log-log-generator    "python /app/log_rep…"   log-generator       2 minutes ago   Restarting (1) 3 seconds ago   
 minio-oss           minio/minio:latest                     "/usr/bin/docker-ent…"   minio-oss           2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
 postgres-db         postgres:16-alpine                     "docker-entrypoint.s…"   postgres-db         2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
 spark-master        aiops_distributed_log-spark-master     "/opt/entrypoint.sh …"   spark-master        2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:7077->7077/tcp, [::]:7077->7077/tcp, 0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
 spark-worker        aiops_distributed_log-spark-worker     "/opt/entrypoint.sh …"   spark-worker        2 minutes ago   Up 2 minutes                   0.0.0.0:8082->8081/tcp, [::]:8082->8081/tcp
 === log-generator logs ===
-2026-06-29 09:36:31,750 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
-2026-06-29 09:36:31,750 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
-2026-06-29 09:36:31,750 [INFO] log-generator — Target    : /var/log/aiops/system.log
-2026-06-29 09:36:31,750 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
-2026-06-29 09:36:31,750 [INFO] log-generator — ════════════════════════════════════════════════════════════
-Error: -29 09:36:31,750 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
-Error: -29 09:36:31,750 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
-2026-06-29 09:36:45,833 [INFO] log-generator — ════════════════════════════════════════════════════════════
-2026-06-29 09:36:45,833 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
-2026-06-29 09:36:45,833 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
-2026-06-29 09:36:45,833 [INFO] log-generator — Target    : /var/log/aiops/system.log
-2026-06-29 09:36:45,833 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
-2026-06-29 09:36:45,834 [INFO] log-generator — ════════════════════════════════════════════════════════════
-Error: -29 09:36:45,834 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
-Error: -29 09:36:45,834 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:04:41,511 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:04:41,511 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:04:41,512 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:04:41,512 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:04:41,512 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:04:41,512 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:04:41,512 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:04:54,518 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:04:54,518 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:04:54,518 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:04:54,518 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:04:54,518 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:04:54,518 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:04:54,518 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:04:54,518 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
 === fluentd-agent logs ===
-2026-06-29 09:34:43.557738476 +0000 fluent.info: {"message":"[output_kafka] initialized kafka producer: fluentd"}
-2026-06-29 09:34:43.558491331 +0000 fluent.debug: {"message":"[input_system_log] Compacted entries: []"}
-2026-06-29 09:34:43.558538433 +0000 fluent.debug: {"existing_targets":[],"entries_after_removing":[],"message":"[input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]"}
-2026-06-29 09:34:43.558597603 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
-2026-06-29 09:34:43.558746218 +0000 fluent.info: {"worker":0,"message":"fluentd worker is now running worker=0"}
-2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] flush_thread actually running
-2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] enqueue_thread actually running
-2026-06-29 09:34:44.058075249 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
-2026-06-29 09:34:44.058305213 +0000 fluent.debug: {"message":"[output_kafka] enqueue_thread actually running"}
-2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] flush_thread actually running
-2026-06-29 09:34:44.058700256 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
-2026-06-29 09:35:45 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
-2026-06-29 09:35:45.686282259 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
-2026-06-29 09:36:47 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
-2026-06-29 09:36:47.818108820 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:02:51.086165717 +0000 fluent.warn: {"message":"parameter 'kafka_agg_max_bytes' in <match aiops.raw>\n  @type kafka2\n  @id output_kafka\n  brokers kafka-1:29092,kafka-2:29092,kafka-3:29092\n  default_topic \"system-logs\"\n  required_acks -1\n  max_send_retries 3\n  kafka_agg_max_bytes 524288\n  <format>\n    @type \"json\"\n  </format>\n  <buffer>\n    @type \"file\"\n    path \"/fluentd/buffer/kafka_output\"\n    chunk_limit_size 1m\n    queue_limit_length 128\n    total_limit_size 512m\n    flush_mode interval\n    flush_interval 1s\n    flush_thread_count 2\n    retry_type exponential_backoff\n    retry_wait 1s\n    retry_max_interval 30s\n    retry_forever true\n    overflow_action block\n  </buffer>\n</match> is not used."}
+2026-06-29 10:02:51.086311918 +0000 fluent.info: {"pid":16,"ppid":7,"worker":0,"message":"starting fluentd worker pid=16 ppid=7 worker=0"}
+2026-06-29 10:02:51.087127990 +0000 fluent.debug: {"instance":2200,"stage_size":0,"queue_size":0,"message":"[output_kafka] buffer started instance=2200 stage_size=0 queue_size=0"}
+2026-06-29 10:02:51.088041990 +0000 fluent.info: {"message":"[output_kafka] initialized kafka producer: fluentd"}
+2026-06-29 10:02:51.088258801 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 10:02:51.088388207 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 10:02:51.088549094 +0000 fluent.debug: {"message":"[output_kafka] enqueue_thread actually running"}
+2026-06-29 10:02:51.089535350 +0000 fluent.debug: {"message":"[input_system_log] Compacted entries: []"}
+2026-06-29 10:02:51.089607839 +0000 fluent.debug: {"existing_targets":[],"entries_after_removing":[],"message":"[input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]"}
+2026-06-29 10:02:51.089690340 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:02:51.089954195 +0000 fluent.info: {"worker":0,"message":"fluentd worker is now running worker=0"}
+2026-06-29 10:03:53 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:03:53.247072964 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:04:55 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:04:55.415436114 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
 Attempt 5/24: model_metrics row count = 0
-Attempt 6/24: model_metrics row count = 0
 
 
 
-existing = "} 
+
+Attempt 24/24: model_metrics row count = 0
+=== Diagnostics (Attempt 24) ===
+NAME                IMAGE                                  COMMAND                  SERVICE             CREATED         STATUS                         PORTS
+fastapi-server      aiops_distributed_log-fastapi-server   "uvicorn src.api.mai…"   fastapi-server      6 minutes ago   Up 5 minutes (healthy)         0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+fluentd-agent       aiops_distributed_log-fluentd-agent    "tini -- /bin/entryp…"   fluentd-agent       6 minutes ago   Up 5 minutes                   0.0.0.0:24224->24224/tcp, 0.0.0.0:24224->24224/udp, [::]:24224->24224/tcp, [::]:24224->24224/udp
+grafana-dashboard   grafana/grafana:10.2.0                 "/run.sh"                grafana-dashboard   6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+kafka-1             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-1             6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
+kafka-2             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-2             6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:9094->9092/tcp, [::]:9094->9092/tcp
+kafka-3             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-3             6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:9096->9092/tcp, [::]:9096->9092/tcp
+log-generator       aiops_distributed_log-log-generator    "python /app/log_rep…"   log-generator       6 minutes ago   Restarting (1) 8 seconds ago   
+minio-oss           minio/minio:latest                     "/usr/bin/docker-ent…"   minio-oss           6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
+postgres-db         postgres:16-alpine                     "docker-entrypoint.s…"   postgres-db         6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+spark-master        aiops_distributed_log-spark-master     "/opt/entrypoint.sh …"   spark-master        6 minutes ago   Up 6 minutes (healthy)         0.0.0.0:7077->7077/tcp, [::]:7077->7077/tcp, 0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
+spark-worker        aiops_distributed_log-spark-worker     "/opt/entrypoint.sh …"   spark-worker        6 minutes ago   Up 6 minutes                   0.0.0.0:8082->8081/tcp, [::]:8082->8081/tcp
+=== log-generator logs ===
+2026-06-29 10:07:17,339 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:07:17,339 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:07:17,339 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:07:17,339 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:07:17,339 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:07:17,339 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:07:17,339 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:08:19,707 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:08:19,707 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:08:19,707 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:08:19,707 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:08:19,707 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:08:19,707 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:08:19,707 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:08:19,707 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+=== fluentd-agent logs ===
+2026-06-29 10:02:51.088549094 +0000 fluent.debug: {"message":"[output_kafka] enqueue_thread actually running"}
+2026-06-29 10:02:51.089535350 +0000 fluent.debug: {"message":"[input_system_log] Compacted entries: []"}
+2026-06-29 10:02:51.089607839 +0000 fluent.debug: {"existing_targets":[],"entries_after_removing":[],"message":"[input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]"}
+2026-06-29 10:02:51.089690340 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:02:51.089954195 +0000 fluent.info: {"worker":0,"message":"fluentd worker is now running worker=0"}
+2026-06-29 10:03:53 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:03:53.247072964 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:04:55 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:04:55.415436114 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:05:57 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:05:57.574563732 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:06:59 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:06:59.792156227 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:08:01 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:08:01.935054661 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
 ❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout.
 === spark-master logs ===
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
-26/06/29 09:34:17 INFO Master: Started daemon with process name: 1@spark-master
+26/06/29 10:02:11 INFO Master: Started daemon with process name: 1@spark-master
+26/06/29 10:02:11 INFO SignalUtils: Registering signal handler for TERM
+26/06/29 10:02:11 INFO SignalUtils: Registering signal handler for HUP
+26/06/29 10:02:11 INFO SignalUtils: Registering signal handler for INT
+26/06/29 10:02:12 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/06/29 10:02:12 INFO SecurityManager: Changing view acls to: spark
+26/06/29 10:02:12 INFO SecurityManager: Changing modify acls to: spark
+26/06/29 10:02:12 INFO SecurityManager: Changing view acls groups to: 
+26/06/29 10:02:12 INFO SecurityManager: Changing modify acls groups to: 
+26/06/29 10:02:12 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+26/06/29 10:02:12 INFO Utils: Successfully started service 'sparkMaster' on port 7077.
+26/06/29 10:02:12 INFO Master: Starting Spark master at spark://172.20.0.3:7077
+26/06/29 10:02:12 INFO Master: Running Spark version 3.5.0
+26/06/29 10:02:13 INFO JettyUtils: Start Jetty 0.0.0.0:8080 for MasterUI
+26/06/29 10:02:13 INFO Utils: Successfully started service 'MasterUI' on port 8080.
+26/06/29 10:02:14 INFO MasterWebUI: Bound MasterWebUI to 0.0.0.0, and started at http://spark-master:8080
+26/06/29 10:02:15 INFO Master: I have been elected leader! New state: ALIVE
+26/06/29 10:02:26 INFO Master: Registering worker 172.20.0.9:32825 with 6 cores, 18.5 GiB RAM
+26/06/29 10:03:24 INFO Master: Registering app AIOps-LakehouseInit
+26/06/29 10:03:24 INFO Master: Registered app AIOps-LakehouseInit with ID app-20260629100324-0000
+26/06/29 10:03:24 INFO Master: Start scheduling for app app-20260629100324-0000 with rpId: 0
+26/06/29 10:03:24 INFO Master: Launching executor app-20260629100324-0000/0 on worker worker-20260629100223-172.20.0.9-32825
+26/06/29 10:03:25 INFO Master: Start scheduling for app app-20260629100324-0000 with rpId: 0
+26/06/29 10:04:03 INFO Master: Received unregister request from application app-20260629100324-0000
+26/06/29 10:04:03 INFO Master: Removing app app-20260629100324-0000
+26/06/29 10:04:04 INFO Master: 172.20.0.3:55718 got disassociated, removing it.
+26/06/29 10:04:04 INFO Master: spark-master:38717 got disassociated, removing it.
+26/06/29 10:04:04 WARN Master: Got status update for unknown executor app-20260629100324-0000/0
+26/06/29 10:04:10 INFO Master: Registering app AIOps-StreamProcessor
+26/06/29 10:04:10 INFO Master: Registered app AIOps-StreamProcessor with ID app-20260629100410-0001
+26/06/29 10:04:10 INFO Master: Start scheduling for app app-20260629100410-0001 with rpId: 0
+26/06/29 10:04:10 INFO Master: Launching executor app-20260629100410-0001/0 on worker worker-20260629100223-172.20.0.9-32825
+26/06/29 10:04:10 INFO Master: Start scheduling for app app-20260629100410-0001 with rpId: 0
+=== log-generator logs ===
+Error: -29 10:04:33,836 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:04:33,836 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:04:41,511 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:04:41,511 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:04:41,511 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:04:41,512 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:04:41,512 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:04:41,512 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:04:41,512 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:04:41,512 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:04:54,518 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:04:54,518 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:04:54,518 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:04:54,518 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:04:54,518 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:04:54,518 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:04:54,518 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:04:54,518 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:05:21,379 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:05:21,380 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:05:21,380 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:05:21,380 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:05:21,380 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:05:21,380 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:05:21,380 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:05:21,380 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:06:14,974 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:06:14,974 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:06:14,974 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:06:14,974 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:06:14,974 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:06:14,974 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:06:14,974 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:06:14,974 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:07:17,339 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:07:17,339 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:07:17,339 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:07:17,339 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:07:17,339 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:07:17,339 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:07:17,339 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:07:17,339 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 10:08:19,707 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 10:08:19,707 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 10:08:19,707 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 10:08:19,707 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 10:08:19,707 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 10:08:19,707 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 10:08:19,707 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 10:08:19,707 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+=== fluentd-agent logs ===
+  <format>
+    @type "json"
+  </format>
+  <buffer>
+    @type "file"
+    path "/fluentd/buffer/kafka_output"
+    chunk_limit_size 1m
+    queue_limit_length 128
+    total_limit_size 512m
+    flush_mode interval
+    flush_interval 1s
+    flush_thread_count 2
+    retry_type exponential_backoff
+    retry_wait 1s
+    retry_max_interval 30s
+    retry_forever true
+    overflow_action block
+  </buffer>
+</match> is not used.
+2026-06-29 10:02:51 +0000 [info]: #0 fluent/log.rb:362:info: starting fluentd worker pid=16 ppid=7 worker=0
+2026-06-29 10:02:51 +0000 [debug]: #0 [output_kafka] buffer started instance=2200 stage_size=0 queue_size=0
+2026-06-29 10:02:51 +0000 [info]: #0 [output_kafka] initialized kafka producer: fluentd
+2026-06-29 10:02:51 +0000 [debug]: #0 [output_kafka] flush_thread actually running
+2026-06-29 10:02:51 +0000 [debug]: #0 [output_kafka] flush_thread actually running
+2026-06-29 10:02:51 +0000 [debug]: #0 [output_kafka] enqueue_thread actually running
+2026-06-29 10:02:51 +0000 [debug]: #0 [input_system_log] Compacted entries: []
+2026-06-29 10:02:51 +0000 [debug]: #0 [input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]
+2026-06-29 10:02:51 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:02:51 +0000 [info]: #0 fluent/log.rb:362:info: fluentd worker is now running worker=0
+2026-06-29 10:02:51.086165717 +0000 fluent.warn: {"message":"parameter 'kafka_agg_max_bytes' in <match aiops.raw>\n  @type kafka2\n  @id output_kafka\n  brokers kafka-1:29092,kafka-2:29092,kafka-3:29092\n  default_topic \"system-logs\"\n  required_acks -1\n  max_send_retries 3\n  kafka_agg_max_bytes 524288\n  <format>\n    @type \"json\"\n  </format>\n  <buffer>\n    @type \"file\"\n    path \"/fluentd/buffer/kafka_output\"\n    chunk_limit_size 1m\n    queue_limit_length 128\n    total_limit_size 512m\n    flush_mode interval\n    flush_interval 1s\n    flush_thread_count 2\n    retry_type exponential_backoff\n    retry_wait 1s\n    retry_max_interval 30s\n    retry_forever true\n    overflow_action block\n  </buffer>\n</match> is not used."}
+2026-06-29 10:02:51.086311918 +0000 fluent.info: {"pid":16,"ppid":7,"worker":0,"message":"starting fluentd worker pid=16 ppid=7 worker=0"}
+2026-06-29 10:02:51.087127990 +0000 fluent.debug: {"instance":2200,"stage_size":0,"queue_size":0,"message":"[output_kafka] buffer started instance=2200 stage_size=0 queue_size=0"}
+2026-06-29 10:02:51.088041990 +0000 fluent.info: {"message":"[output_kafka] initialized kafka producer: fluentd"}
+2026-06-29 10:02:51.088258801 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 10:02:51.088388207 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 10:02:51.088549094 +0000 fluent.debug: {"message":"[output_kafka] enqueue_thread actually running"}
+2026-06-29 10:02:51.089535350 +0000 fluent.debug: {"message":"[input_system_log] Compacted entries: []"}
+2026-06-29 10:02:51.089607839 +0000 fluent.debug: {"existing_targets":[],"entries_after_removing":[],"message":"[input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]"}
+2026-06-29 10:02:51.089690340 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:02:51.089954195 +0000 fluent.info: {"worker":0,"message":"fluentd worker is now running worker=0"}
+2026-06-29 10:03:53 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:03:53.247072964 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:04:55 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:04:55.415436114 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:05:57 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:05:57.574563732 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:06:59 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:06:59.792156227 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 10:08:01 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 10:08:01.935054661 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+Error: Process completed with exit code 1.

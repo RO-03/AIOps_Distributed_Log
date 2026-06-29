@@ -121,7 +121,7 @@ def read_kafka_stream(spark: SparkSession) -> DataFrame:
         .format("kafka")
         .option("kafka.bootstrap.servers", KAFKA_BROKERS)
         .option("subscribe", KAFKA_SRC_TOPIC)
-        .option("startingOffsets", "latest")
+        .option("startingOffsets", "earliest")
         .option("failOnDataLoss", "false")
         .option("maxOffsetsPerTrigger", 50000)
         .load()

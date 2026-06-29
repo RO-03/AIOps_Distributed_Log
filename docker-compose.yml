@@ -191,6 +191,7 @@ services:
         condition: service_completed_successfully
     volumes:
       - log_shared:/var/log/aiops
+      - ./data/raw:/data/raw:ro
     environment:
       LOG_FILE: /var/log/aiops/system.log
       DATASET_FILE: /data/raw/BGL_2k.log
