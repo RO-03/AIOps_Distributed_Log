@@ -1,0 +1,35 @@
+Run echo "Checking model_metrics table for at least 1 evaluated batch..."
+  echo "Checking model_metrics table for at least 1 evaluated batch..."
+  COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
+    "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ')
+  echo "model_metrics row count: $COUNT"
+  if [ "$COUNT" -lt 1 ]; then
+    echo "ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written."
+    exit 1
+  fi
+  echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
+  # Print the latest batch metrics for visibility
+  docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
+    "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
+            round(precision_score::numeric,4) AS precision, \
+            round(recall_score::numeric,4) AS recall, \
+            round(f1_score::numeric,4) AS f1, \
+            true_positives, false_positives, true_negatives, false_negatives \
+     FROM model_metrics ORDER BY evaluated_at DESC LIMIT 3;"
+  shell: /usr/bin/bash -e {0}
+  env:
+    PYTHON_VERSION: 3.12
+    PIP_CACHE_DIR: ~/.cache/pip
+    COMPOSE_HTTP_TIMEOUT: 120
+    DOCKER_BUILDKIT: 1
+    pythonLocation: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    PKG_CONFIG_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/pkgconfig
+    Python_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
+    LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
+Checking model_metrics table for at least 1 evaluated batch...
+model_metrics row count: 0
+ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written.
+Error: Process completed with exit code 1.
+

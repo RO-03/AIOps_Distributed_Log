@@ -256,21 +256,36 @@ jobs:
       - name: Start Spark streaming job
         run: |
           python scripts/submit_spark_job.py --job stream_processor &
-          echo "Spark job submitted. Waiting 60s for first batch + model training..."
-          sleep 60
+          echo "Spark job submitted. Waiting 15s for initialization..."
+          sleep 15
 
       # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
       - name: Verify model_metrics populated
         run: |
-          echo "Checking model_metrics table for at least 1 evaluated batch..."
-          COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
-            "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ')
-          echo "model_metrics row count: $COUNT"
-          if [ "$COUNT" -lt 1 ]; then
-            echo "ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written."
-            exit 1
-          fi
-          echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
+          echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
+          max_attempts=24
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
+              "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ' || echo "0")
+            if ! [[ "$COUNT" =~ ^[0-9]+$ ]]; then
+              COUNT=0
+            fi
+            echo "Attempt $attempt/$max_attempts: model_metrics row count = $COUNT"
+            if [ "$COUNT" -gt 0 ]; then
+              echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
+              break
+            fi
+            if [ $attempt -eq $max_attempts ]; then
+              echo "❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout."
+              echo "=== spark-master logs ==="
+              docker logs spark-master --tail 50
+              exit 1
+            fi
+            attempt=$((attempt+1))
+            sleep 10
+          done
+
           # Print the latest batch metrics for visibility
           docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
             "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
