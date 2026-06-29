@@ -281,7 +281,7 @@ jobs:
               COUNT=0
             fi
             echo "Attempt $attempt/$max_attempts: model_metrics row count = $COUNT"
-            if [ "$COUNT" -gt 0 ]; then
+            if [ "$COUNT" -ge 2 ]; then
               echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
               break
             fi

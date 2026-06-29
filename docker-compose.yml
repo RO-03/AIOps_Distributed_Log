@@ -180,8 +180,8 @@ services:
   # Replays BGL/synthetic logs by appending to a shared volume file
   log-generator:
     build:
-      context: ./docker/log-generator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/log-generator/Dockerfile
     container_name: log-generator
     hostname: log-generator
     networks:
@@ -191,7 +191,6 @@ services:
         condition: service_completed_successfully
     volumes:
       - log_shared:/var/log/aiops
-      - ./data/raw:/data/raw:ro
     environment:
       LOG_FILE: /var/log/aiops/system.log
       DATASET_FILE: /data/raw/BGL_2k.log

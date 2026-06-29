@@ -1,99 +1,80 @@
-2026-06-29 09:20:43,448 [INFO] py4j.java_gateway — Callback Server Starting
-2026-06-29 09:20:43,449 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 38787)
-26/06/29 09:20:43 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
-26/06/29 09:20:45 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
-2026-06-29 09:20:46,152 [INFO] stream_processor — Streaming query started. Awaiting termination...
-26/06/29 09:20:46 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
-2026-06-29 09:20:48,467 [INFO] py4j.clientserver — Python Server ready to receive messages
-2026-06-29 09:20:48,468 [INFO] py4j.clientserver — Received command c on object id p0
-2026-06-29 09:20:50,503 [INFO] stream_processor — Batch 0: 0 rows received
-2026-06-29 09:20:50,503 [INFO] stream_processor — Batch 0: empty, skipping
-1s
+26/06/29 09:36:01 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 40129, None)
+26/06/29 09:36:01 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629093601-0001/0 is now RUNNING
+26/06/29 09:36:01 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
+2026-06-29 09:36:04,761 [INFO] py4j.java_gateway — Callback Server Starting
+2026-06-29 09:36:04,761 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 45211)
+26/06/29 09:36:05 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
+26/06/29 09:36:07 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+2026-06-29 09:36:08,271 [INFO] stream_processor — Streaming query started. Awaiting termination...
+26/06/29 09:36:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+2026-06-29 09:36:10,546 [INFO] py4j.clientserver — Python Server ready to receive messages
+2026-06-29 09:36:10,546 [INFO] py4j.clientserver — Received command c on object id p0
+2026-06-29 09:36:12,566 [INFO] stream_processor — Batch 0: 0 rows received
+2026-06-29 09:36:12,566 [INFO] stream_processor — Batch 0: empty, skipping
+0s
 Run echo "Restarting log-generator..."
-  echo "Restarting log-generator..."
-  docker compose restart log-generator
-  shell: /usr/bin/bash -e {0}
-  env:
-    PYTHON_VERSION: 3.12
-    PIP_CACHE_DIR: ~/.cache/pip
-    COMPOSE_HTTP_TIMEOUT: 120
-    DOCKER_BUILDKIT: 1
-    pythonLocation: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    PKG_CONFIG_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/pkgconfig
-    Python_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
 Restarting log-generator...
  Container log-generator Restarting 
  Container log-generator Started 
-4m 1s
+3m 27s
 Run echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
 Waiting for Spark stream to process the first batch and write to model_metrics...
 Attempt 1/24: model_metrics row count = 0
 Attempt 2/24: model_metrics row count = 0
 Attempt 3/24: model_metrics row count = 0
 Attempt 4/24: model_metrics row count = 0
+=== Diagnostics (Attempt 4) ===
+NAME                IMAGE                                  COMMAND                  SERVICE             CREATED         STATUS                         PORTS
+fastapi-server      aiops_distributed_log-fastapi-server   "uvicorn src.api.mai…"   fastapi-server      2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+fluentd-agent       aiops_distributed_log-fluentd-agent    "tini -- /bin/entryp…"   fluentd-agent       2 minutes ago   Up 2 minutes                   0.0.0.0:24224->24224/tcp, 0.0.0.0:24224->24224/udp, [::]:24224->24224/tcp, [::]:24224->24224/udp
+grafana-dashboard   grafana/grafana:10.2.0                 "/run.sh"                grafana-dashboard   2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+kafka-1             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-1             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
+kafka-2             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-2             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9094->9092/tcp, [::]:9094->9092/tcp
+kafka-3             confluentinc/cp-kafka:7.6.0            "/etc/confluent/dock…"   kafka-3             2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9096->9092/tcp, [::]:9096->9092/tcp
+log-generator       aiops_distributed_log-log-generator    "python /app/log_rep…"   log-generator       2 minutes ago   Restarting (1) 2 seconds ago   
+minio-oss           minio/minio:latest                     "/usr/bin/docker-ent…"   minio-oss           2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
+postgres-db         postgres:16-alpine                     "docker-entrypoint.s…"   postgres-db         2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+spark-master        aiops_distributed_log-spark-master     "/opt/entrypoint.sh …"   spark-master        2 minutes ago   Up 2 minutes (healthy)         0.0.0.0:7077->7077/tcp, [::]:7077->7077/tcp, 0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
+spark-worker        aiops_distributed_log-spark-worker     "/opt/entrypoint.sh …"   spark-worker        2 minutes ago   Up 2 minutes                   0.0.0.0:8082->8081/tcp, [::]:8082->8081/tcp
+=== log-generator logs ===
+2026-06-29 09:36:31,750 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 09:36:31,750 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 09:36:31,750 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 09:36:31,750 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 09:36:31,750 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 09:36:31,750 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 09:36:31,750 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+2026-06-29 09:36:45,833 [INFO] log-generator — ════════════════════════════════════════════════════════════
+2026-06-29 09:36:45,833 [INFO] log-generator — AIOps Log Replay Engine — Phase 0
+2026-06-29 09:36:45,833 [INFO] log-generator — Dataset   : /data/raw/BGL_2k.log
+2026-06-29 09:36:45,833 [INFO] log-generator — Target    : /var/log/aiops/system.log
+2026-06-29 09:36:45,833 [INFO] log-generator — Interval  : 0.0010s per line (batch=10)
+2026-06-29 09:36:45,834 [INFO] log-generator — ════════════════════════════════════════════════════════════
+Error: -29 09:36:45,834 [ERROR] log-generator — Dataset file not found: /data/raw/BGL_2k.log
+Error: -29 09:36:45,834 [ERROR] log-generator — Mount the data/raw directory and ensure BGL_2k.log exists.
+=== fluentd-agent logs ===
+2026-06-29 09:34:43.557738476 +0000 fluent.info: {"message":"[output_kafka] initialized kafka producer: fluentd"}
+2026-06-29 09:34:43.558491331 +0000 fluent.debug: {"message":"[input_system_log] Compacted entries: []"}
+2026-06-29 09:34:43.558538433 +0000 fluent.debug: {"existing_targets":[],"entries_after_removing":[],"message":"[input_system_log] Remove missing entries. existing_targets=[] entries_after_removing=[]"}
+2026-06-29 09:34:43.558597603 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 09:34:43.558746218 +0000 fluent.info: {"worker":0,"message":"fluentd worker is now running worker=0"}
+2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] flush_thread actually running
+2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] enqueue_thread actually running
+2026-06-29 09:34:44.058075249 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 09:34:44.058305213 +0000 fluent.debug: {"message":"[output_kafka] enqueue_thread actually running"}
+2026-06-29 09:34:44 +0000 [debug]: #0 [output_kafka] flush_thread actually running
+2026-06-29 09:34:44.058700256 +0000 fluent.debug: {"message":"[output_kafka] flush_thread actually running"}
+2026-06-29 09:35:45 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 09:35:45.686282259 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
+2026-06-29 09:36:47 +0000 [debug]: #0 [input_system_log] tailing paths: target =  | existing = 
+2026-06-29 09:36:47.818108820 +0000 fluent.debug: {"message":"[input_system_log] tailing paths: target =  | existing = "}
 Attempt 5/24: model_metrics row count = 0
 Attempt 6/24: model_metrics row count = 0
-Attempt 7/24: model_metrics row count = 0
-Attempt 8/24: model_metrics row count = 0
-Attempt 9/24: model_metrics row count = 0
-Attempt 10/24: model_metrics row count = 0
-Attempt 11/24: model_metrics row count = 0
-Attempt 12/24: model_metrics row count = 0
-Attempt 13/24: model_metrics row count = 0
-Attempt 14/24: model_metrics row count = 0
-Attempt 15/24: model_metrics row count = 0
-Attempt 16/24: model_metrics row count = 0
-Attempt 17/24: model_metrics row count = 0
-Attempt 18/24: model_metrics row count = 0
-Attempt 19/24: model_metrics row count = 0
-Attempt 20/24: model_metrics row count = 0
-Attempt 21/24: model_metrics row count = 0
-Attempt 22/24: model_metrics row count = 0
-Attempt 23/24: model_metrics row count = 0
-Attempt 24/24: model_metrics row count = 0
+
+
+
+existing = "}
 ❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout.
 === spark-master logs ===
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
-26/06/29 09:18:49 INFO Master: Started daemon with process name: 1@spark-master
-26/06/29 09:18:49 INFO SignalUtils: Registering signal handler for TERM
-26/06/29 09:18:49 INFO SignalUtils: Registering signal handler for HUP
-26/06/29 09:18:49 INFO SignalUtils: Registering signal handler for INT
-26/06/29 09:18:49 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-26/06/29 09:18:49 INFO SecurityManager: Changing view acls to: spark
-26/06/29 09:18:49 INFO SecurityManager: Changing modify acls to: spark
-26/06/29 09:18:49 INFO SecurityManager: Changing view acls groups to: 
-26/06/29 09:18:49 INFO SecurityManager: Changing modify acls groups to: 
-26/06/29 09:18:49 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
-26/06/29 09:18:50 INFO Utils: Successfully started service 'sparkMaster' on port 7077.
-26/06/29 09:18:50 INFO Master: Starting Spark master at spark://172.20.0.3:7077
-26/06/29 09:18:50 INFO Master: Running Spark version 3.5.0
-26/06/29 09:18:50 INFO JettyUtils: Start Jetty 0.0.0.0:8080 for MasterUI
-26/06/29 09:18:50 INFO Utils: Successfully started service 'MasterUI' on port 8080.
-26/06/29 09:18:50 INFO MasterWebUI: Bound MasterWebUI to 0.0.0.0, and started at http://spark-master:8080
-26/06/29 09:18:50 INFO Master: I have been elected leader! New state: ALIVE
-26/06/29 09:19:03 INFO Master: Registering worker 172.20.0.8:39735 with 6 cores, 18.5 GiB RAM
-26/06/29 09:19:53 INFO Master: Registering app AIOps-LakehouseInit
-26/06/29 09:19:53 INFO Master: Registered app AIOps-LakehouseInit with ID app-20260629091953-0000
-26/06/29 09:19:53 INFO Master: Start scheduling for app app-20260629091953-0000 with rpId: 0
-26/06/29 09:19:53 INFO Master: Launching executor app-20260629091953-0000/0 on worker worker-20260629091900-172.20.0.8-39735
-26/06/29 09:19:53 INFO Master: Start scheduling for app app-20260629091953-0000 with rpId: 0
-26/06/29 09:20:31 INFO Master: Received unregister request from application app-20260629091953-0000
-26/06/29 09:20:31 INFO Master: Removing app app-20260629091953-0000
-26/06/29 09:20:31 INFO Master: 172.20.0.3:58656 got disassociated, removing it.
-26/06/29 09:20:31 INFO Master: spark-master:42385 got disassociated, removing it.
-26/06/29 09:20:31 WARN Master: Got status update for unknown executor app-20260629091953-0000/0
-26/06/29 09:20:39 INFO Master: Registering app AIOps-StreamProcessor
-26/06/29 09:20:39 INFO Master: Registered app AIOps-StreamProcessor with ID app-20260629092039-0001
-26/06/29 09:20:39 INFO Master: Start scheduling for app app-20260629092039-0001 with rpId: 0
-26/06/29 09:20:39 INFO Master: Launching executor app-20260629092039-0001/0 on worker worker-20260629091900-172.20.0.8-39735
-26/06/29 09:20:39 INFO Master: Start scheduling for app app-20260629092039-0001 with rpId: 0
-Error: Process completed with exit code 1.
-0s
-0s
-Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
-Run actions/upload-artifact@v4
-(node:8246) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
+26/06/29 09:34:17 INFO Master: Started daemon with process name: 1@spark-master

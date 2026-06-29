@@ -8,12 +8,12 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # No external deps needed — only stdlib
-COPY log_replay.py /app/log_replay.py
+COPY docker/log-generator/log_replay.py /app/log_replay.py
+COPY data/raw /data/raw
 
 # Volume mount points:
 #   /var/log/aiops  — shared with fluentd-agent (write)
-#   /data/raw       — dataset files (read-only)
-VOLUME ["/var/log/aiops", "/data/raw"]
+VOLUME ["/var/log/aiops"]
 
 ENV LOG_FILE=/var/log/aiops/system.log \
     DATASET_FILE=/data/raw/BGL_2k.log \
