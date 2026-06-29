@@ -1,35 +1,24 @@
-Run echo "Checking model_metrics table for at least 1 evaluated batch..."
-  echo "Checking model_metrics table for at least 1 evaluated batch..."
-  COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
-    "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ')
-  echo "model_metrics row count: $COUNT"
-  if [ "$COUNT" -lt 1 ]; then
-    echo "ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written."
-    exit 1
-  fi
-  echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
-  # Print the latest batch metrics for visibility
-  docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
-    "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
-            round(precision_score::numeric,4) AS precision, \
-            round(recall_score::numeric,4) AS recall, \
-            round(f1_score::numeric,4) AS f1, \
-            true_positives, false_positives, true_negatives, false_negatives \
-     FROM model_metrics ORDER BY evaluated_at DESC LIMIT 3;"
-  shell: /usr/bin/bash -e {0}
-  env:
-    PYTHON_VERSION: 3.12
-    PIP_CACHE_DIR: ~/.cache/pip
-    COMPOSE_HTTP_TIMEOUT: 120
-    DOCKER_BUILDKIT: 1
-    pythonLocation: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    PKG_CONFIG_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib/pkgconfig
-    Python_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    Python2_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    Python3_ROOT_DIR: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64
-    LD_LIBRARY_PATH: /home/roshan/actions-runner-aiops/_work/_tool/Python/3.12.13/x64/lib
-Checking model_metrics table for at least 1 evaluated batch...
-model_metrics row count: 0
-ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written.
-Error: Process completed with exit code 1.
-
+26/06/29 11:13:34 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, spark-master, 38637, None)
+26/06/29 11:13:34 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 38637, None)
+26/06/29 11:13:34 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629111334-0001/0 is now RUNNING
+26/06/29 11:13:34 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
+2026-06-29 11:13:37,519 [INFO] py4j.java_gateway — Callback Server Starting
+2026-06-29 11:13:37,519 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 40935)
+26/06/29 11:13:37 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
+26/06/29 11:13:38 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+2026-06-29 11:13:39,390 [INFO] stream_processor — Streaming query started. Awaiting termination...
+26/06/29 11:13:39 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+2026-06-29 11:13:41,206 [INFO] py4j.clientserver — Python Server ready to receive messages
+2026-06-29 11:13:41,206 [INFO] py4j.clientserver — Received command c on object id p0
+2026-06-29 11:13:42,778 [INFO] stream_processor — Batch 0: 0 rows received
+2026-06-29 11:13:42,778 [INFO] stream_processor — Batch 0: empty, skipping
+4m 1s
+Run echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
+Waiting for Spark stream to process the first batch and write to model_metrics...
+Attempt 1/24: model_metrics row count = 0
+Attempt 2/24: model_metrics row count = 0
+Attempt 3/24: model_metrics row count = 0
+Attempt 4/24: model_metrics row count = 0
+Attempt 5/24: model_metrics row count = 0
+Attempt 6/24: model_metrics row count = 0
+Attempt 7/24: model_metrics row count = 0

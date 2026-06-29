@@ -262,12 +262,12 @@ jobs:
       # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
       - name: Verify model_metrics populated
         run: |
-          echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
+          echo "Waiting for Spark stream to process batch 1 or 2 and write to model_metrics..."
           max_attempts=24
           attempt=1
           while [ $attempt -le $max_attempts ]; do
             COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
-              "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ' || echo "0")
+              "SELECT COUNT(*) FROM model_metrics WHERE batch_id IN (1, 2);" | tr -d ' ' || echo "0")
             if ! [[ "$COUNT" =~ ^[0-9]+$ ]]; then
               COUNT=0
             fi
