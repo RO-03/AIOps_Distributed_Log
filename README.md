@@ -138,6 +138,16 @@ To run the isolated unit/logic tests:
 pytest tests/test_chaos_phase5.py -v -k unit
 ```
 
+Verification Plan
+Automated Tests
+Run generate_logs.py to produce a test dataset with known anomaly labels.
+Run submit_spark_job.py to stream logs through the updated engine.
+Query PostgreSQL to verify stats are populated:
+
+```bash
+docker exec -it postgres-db psql -U aiops_user -d aiops_analytics -c "SELECT * FROM model_metrics ORDER BY evaluated_at DESC LIMIT 5;"
+```
+
 ---
 
 ## 🛑 Teardown
