@@ -38,6 +38,7 @@ concurrency:
 env:
   PYTHON_VERSION: "3.12"
   PIP_CACHE_DIR: ~/.cache/pip
+  PYTHONUNBUFFERED: "1"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # STAGE 1 — Lint & Format Check
@@ -284,10 +285,22 @@ jobs:
               echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
               break
             fi
+            if [ $((attempt % 4)) -eq 0 ]; then
+              echo "=== Diagnostics (Attempt $attempt) ==="
+              docker compose ps
+              echo "=== log-generator logs ==="
+              docker logs log-generator --tail 15 || true
+              echo "=== fluentd-agent logs ==="
+              docker logs fluentd-agent --tail 15 || true
+            fi
             if [ $attempt -eq $max_attempts ]; then
               echo "❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout."
               echo "=== spark-master logs ==="
               docker logs spark-master --tail 50
+              echo "=== log-generator logs ==="
+              docker logs log-generator --tail 50
+              echo "=== fluentd-agent logs ==="
+              docker logs fluentd-agent --tail 50
               exit 1
             fi
             attempt=$((attempt+1))
