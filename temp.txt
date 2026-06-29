@@ -1,20 +1,21 @@
-26/06/29 11:13:34 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, spark-master, 38637, None)
-26/06/29 11:13:34 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 38637, None)
-26/06/29 11:13:34 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629111334-0001/0 is now RUNNING
-26/06/29 11:13:34 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
-2026-06-29 11:13:37,519 [INFO] py4j.java_gateway — Callback Server Starting
-2026-06-29 11:13:37,519 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 40935)
-26/06/29 11:13:37 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
-26/06/29 11:13:38 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
-2026-06-29 11:13:39,390 [INFO] stream_processor — Streaming query started. Awaiting termination...
-26/06/29 11:13:39 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
-2026-06-29 11:13:41,206 [INFO] py4j.clientserver — Python Server ready to receive messages
-2026-06-29 11:13:41,206 [INFO] py4j.clientserver — Received command c on object id p0
-2026-06-29 11:13:42,778 [INFO] stream_processor — Batch 0: 0 rows received
-2026-06-29 11:13:42,778 [INFO] stream_processor — Batch 0: empty, skipping
-4m 1s
-Run echo "Waiting for Spark stream to process the first batch and write to model_metrics..."
-Waiting for Spark stream to process the first batch and write to model_metrics...
+26/06/29 11:49:36 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+26/06/29 11:49:36 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, spark-master, 39939, None)
+26/06/29 11:49:36 INFO BlockManagerMasterEndpoint: Registering block manager spark-master:39939 with 434.4 MiB RAM, BlockManagerId(driver, spark-master, 39939, None)
+26/06/29 11:49:36 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, spark-master, 39939, None)
+26/06/29 11:49:36 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-master, 39939, None)
+26/06/29 11:49:36 INFO StandaloneAppClient$ClientEndpoint: Executor updated: app-20260629114936-0001/0 is now RUNNING
+26/06/29 11:49:36 INFO StandaloneSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.0
+2026-06-29 11:49:40,536 [INFO] py4j.java_gateway — Callback Server Starting
+2026-06-29 11:49:40,537 [INFO] py4j.java_gateway — Socket listening on ('127.0.0.1', 37689)
+26/06/29 11:49:40 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
+26/06/29 11:49:43 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+2026-06-29 11:49:44,707 [INFO] stream_processor — Streaming query started. Awaiting termination...
+26/06/29 11:49:45 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+2026-06-29 11:49:48,385 [INFO] py4j.clientserver — Python Server ready to receive messages
+2026-06-29 11:49:48,385 [INFO] py4j.clientserver — Received command c on object id p0
+4m 2s
+Run echo "Waiting for Spark stream to process batch 1 or 2 and write to model_metrics..."
+Waiting for Spark stream to process batch 1 or 2 and write to model_metrics...
 Attempt 1/24: model_metrics row count = 0
 Attempt 2/24: model_metrics row count = 0
 Attempt 3/24: model_metrics row count = 0
@@ -22,3 +23,57 @@ Attempt 4/24: model_metrics row count = 0
 Attempt 5/24: model_metrics row count = 0
 Attempt 6/24: model_metrics row count = 0
 Attempt 7/24: model_metrics row count = 0
+Attempt 8/24: model_metrics row count = 0
+Attempt 9/24: model_metrics row count = 0
+Attempt 10/24: model_metrics row count = 0
+Attempt 11/24: model_metrics row count = 0
+Attempt 12/24: model_metrics row count = 0
+Attempt 13/24: model_metrics row count = 0
+Attempt 14/24: model_metrics row count = 0
+Attempt 15/24: model_metrics row count = 0
+Attempt 16/24: model_metrics row count = 0
+Attempt 17/24: model_metrics row count = 0
+Attempt 18/24: model_metrics row count = 0
+Attempt 19/24: model_metrics row count = 0
+Attempt 20/24: model_metrics row count = 0
+Attempt 21/24: model_metrics row count = 0
+Attempt 22/24: model_metrics row count = 0
+Attempt 23/24: model_metrics row count = 0
+Attempt 24/24: model_metrics row count = 0
+❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout.
+=== spark-master logs ===
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/06/29 11:46:30 INFO Master: Started daemon with process name: 1@spark-master
+26/06/29 11:46:31 INFO SignalUtils: Registering signal handler for TERM
+26/06/29 11:46:31 INFO SignalUtils: Registering signal handler for HUP
+26/06/29 11:46:31 INFO SignalUtils: Registering signal handler for INT
+26/06/29 11:46:32 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/06/29 11:46:32 INFO SecurityManager: Changing view acls to: spark
+26/06/29 11:46:32 INFO SecurityManager: Changing modify acls to: spark
+26/06/29 11:46:32 INFO SecurityManager: Changing view acls groups to: 
+26/06/29 11:46:32 INFO SecurityManager: Changing modify acls groups to: 
+26/06/29 11:46:32 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+26/06/29 11:46:35 INFO Utils: Successfully started service 'sparkMaster' on port 7077.
+26/06/29 11:46:35 INFO Master: Starting Spark master at spark://172.20.0.4:7077
+26/06/29 11:46:35 INFO Master: Running Spark version 3.5.0
+26/06/29 11:46:35 INFO JettyUtils: Start Jetty 0.0.0.0:8080 for MasterUI
+26/06/29 11:46:35 INFO Utils: Successfully started service 'MasterUI' on port 8080.
+26/06/29 11:46:36 INFO MasterWebUI: Bound MasterWebUI to 0.0.0.0, and started at http://spark-master:8080
+26/06/29 11:46:37 INFO Master: I have been elected leader! New state: ALIVE
+26/06/29 11:46:48 INFO Master: Registering worker 172.20.0.8:39767 with 6 cores, 18.5 GiB RAM
+26/06/29 11:47:51 INFO Master: Registering app AIOps-LakehouseInit
+26/06/29 11:47:51 INFO Master: Registered app AIOps-LakehouseInit with ID app-20260629114751-0000
+26/06/29 11:47:51 INFO Master: Start scheduling for app app-20260629114751-0000 with rpId: 0
+26/06/29 11:47:51 INFO Master: Launching executor app-20260629114751-0000/0 on worker worker-20260629114645-172.20.0.8-39767
+26/06/29 11:47:52 INFO Master: Start scheduling for app app-20260629114751-0000 with rpId: 0
+26/06/29 11:49:28 INFO Master: Received unregister request from application app-20260629114751-0000
+26/06/29 11:49:28 INFO Master: Removing app app-20260629114751-0000
+26/06/29 11:49:28 INFO Master: 172.20.0.4:52672 got disassociated, removing it.
+26/06/29 11:49:28 INFO Master: spark-master:37063 got disassociated, removing it.
+26/06/29 11:49:28 WARN Master: Got status update for unknown executor app-20260629114751-0000/0
+26/06/29 11:49:36 INFO Master: Registering app AIOps-StreamProcessor
+26/06/29 11:49:36 INFO Master: Registered app AIOps-StreamProcessor with ID app-20260629114936-0001
+26/06/29 11:49:36 INFO Master: Start scheduling for app app-20260629114936-0001 with rpId: 0
+26/06/29 11:49:36 INFO Master: Launching executor app-20260629114936-0001/0 on worker worker-20260629114645-172.20.0.8-39767
+26/06/29 11:49:36 INFO Master: Start scheduling for app app-20260629114936-0001 with rpId: 0
+Error: Process completed with exit code 1.

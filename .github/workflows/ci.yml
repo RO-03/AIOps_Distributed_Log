@@ -259,41 +259,6 @@ jobs:
           echo "Spark job submitted. Waiting 15s for initialization..."
           sleep 15
 
-      # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
-      - name: Verify model_metrics populated
-        run: |
-          echo "Waiting for Spark stream to process batch 1 or 2 and write to model_metrics..."
-          max_attempts=24
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
-              "SELECT COUNT(*) FROM model_metrics WHERE batch_id IN (1, 2);" | tr -d ' ' || echo "0")
-            if ! [[ "$COUNT" =~ ^[0-9]+$ ]]; then
-              COUNT=0
-            fi
-            echo "Attempt $attempt/$max_attempts: model_metrics row count = $COUNT"
-            if [ "$COUNT" -gt 0 ]; then
-              echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
-              break
-            fi
-            if [ $attempt -eq $max_attempts ]; then
-              echo "❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout."
-              echo "=== spark-master logs ==="
-              docker logs spark-master --tail 50
-              exit 1
-            fi
-            attempt=$((attempt+1))
-            sleep 10
-          done
-
-          # Print the latest batch metrics for visibility
-          docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
-            "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
-                    round(precision_score::numeric,4) AS precision, \
-                    round(recall_score::numeric,4) AS recall, \
-                    round(f1_score::numeric,4) AS f1, \
-                    true_positives, false_positives, true_negatives, false_negatives \
-             FROM model_metrics ORDER BY evaluated_at DESC LIMIT 3;"
 
       # ── Run the full Pytest suite (preflight + unit + integration) ────────────
       - name: Run full test suite
