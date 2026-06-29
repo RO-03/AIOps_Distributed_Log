@@ -75,3 +75,24 @@ VALUES
     ('MMCS',    'unknown'),
     ('LINKCARD','unknown')
 ON CONFLICT (component) DO NOTHING;
+
+-- ── model_metrics ─────────────────────────────────────────────────────────────
+-- Stores per-batch classification evaluation metrics for MLOps tracking.
+-- Populated by PySpark stream_processor on every micro-batch where
+-- label_original (ground truth) is available.
+CREATE TABLE IF NOT EXISTS model_metrics (
+    id                  BIGSERIAL PRIMARY KEY,
+    batch_id            BIGINT,
+    evaluated_at        TIMESTAMPTZ     NOT NULL DEFAULT now(),
+    total_count         BIGINT          NOT NULL,
+    accuracy            DOUBLE PRECISION NOT NULL,
+    precision_score     DOUBLE PRECISION NOT NULL,
+    recall_score        DOUBLE PRECISION NOT NULL,
+    f1_score            DOUBLE PRECISION NOT NULL,
+    true_positives      BIGINT          NOT NULL,
+    false_positives     BIGINT          NOT NULL,
+    true_negatives      BIGINT          NOT NULL,
+    false_negatives     BIGINT          NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_model_metrics_time ON model_metrics (evaluated_at DESC);

@@ -1,0 +1,396 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "description": "Real-time KMeans anomaly detection model performance — Accuracy, Precision, Recall, F1, Confusion Matrix",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "📊 Live Model Performance — Latest Batch",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "green", "value": 0.85 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT accuracy FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "🎯 Accuracy",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.6 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT precision_score FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "🎯 Precision",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.6 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT recall_score FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "📡 Recall",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.65 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT f1_score FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "⚡ F1-Score",
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+      "id": 101,
+      "title": "📈 Model Metrics Over Time",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Score",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 16, "x": 0, "y": 9 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT evaluated_at AS time, accuracy AS \"Accuracy\", precision_score AS \"Precision\", recall_score AS \"Recall\", f1_score AS \"F1-Score\" FROM model_metrics WHERE $__timeFilter(evaluated_at) ORDER BY evaluated_at;",
+          "refId": "A"
+        }
+      ],
+      "title": "Classification Metrics Timeline",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 9 },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "(SELECT 'Total Evaluated' AS metric, total_count AS value FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1) UNION ALL SELECT 'Batches Logged', COUNT(*)::bigint FROM model_metrics;",
+          "refId": "A"
+        }
+      ],
+      "title": "📊 Summary Stats",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 102,
+      "title": "🧩 Confusion Matrix (Latest Batch)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "False Positives (FP)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "False Negatives (FN)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "True Positives (TP)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "True Negatives (TN)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 19 },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT true_positives AS \"True Positives (TP)\", false_positives AS \"False Positives (FP)\", true_negatives AS \"True Negatives (TN)\", false_negatives AS \"False Negatives (FN)\" FROM model_metrics ORDER BY evaluated_at DESC LIMIT 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Confusion Matrix — TP / FP / TN / FN",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "id": 103,
+      "title": "📋 All Batch Metrics Log",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "accuracy" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "precision_score" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "recall_score" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "f1_score" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.width", "value": 100 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 27 },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "evaluated_at" }]
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "aiops-postgres" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT batch_id, evaluated_at, total_count, accuracy, precision_score, recall_score, f1_score, true_positives, false_positives, true_negatives, false_negatives FROM model_metrics WHERE $__timeFilter(evaluated_at) ORDER BY evaluated_at DESC LIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "title": "All Batch Evaluation History",
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["aiops", "ml", "classification", "accuracy"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AIOps — ML Model Performance",
+  "uid": "aiops-model-perf",
+  "version": 1
+}
