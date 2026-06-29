@@ -22,11 +22,11 @@ on:
   push:
     branches:
       - main
-      - ro7      
+      - ro8      
   pull_request:
     branches:
       - main
-      - ro7
+      - ro8
       
 
 # Cancel any in-progress run for the same branch on a new push
