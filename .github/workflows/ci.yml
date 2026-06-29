@@ -7,8 +7,13 @@
 #   2. unit-tests    — Pytest unit/logic tests with mocked Docker calls
 #   3. integration   — Full Docker Compose stack + preflight + chaos test suite
 #
-# Trigger: push/PR to main or ro6 branch. Integration stage only on push to main/ro6
+# Trigger: push/PR to main. Integration stage only on push to main
 #          (to avoid exhausting runner resources on every draft PR).
+#
+# DB Schema: PostgreSQL init.sql creates 5 tables:
+#   batch_metrics, anomaly_alerts_pg, component_health, alert_summary, model_metrics
+# ML Pipeline: NLP (TF-IDF + L2 Normalizer) → KMeans clustering
+#   Metrics written to model_metrics table per micro-batch.
 # ──────────────────────────────────────────────────────────────────────────────
 
 name: AIOps CI Pipeline
@@ -16,10 +21,12 @@ name: AIOps CI Pipeline
 on:
   push:
     branches:
-      - main      
+      - main
+      - ro7      
   pull_request:
     branches:
       - main
+      - ro7
       
 
 # Cancel any in-progress run for the same branch on a new push
@@ -99,6 +106,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # Install only the lightweight subset needed for unit tests
+          # psycopg2-binary is required by stream_processor._write_model_metrics()
           pip install \
             pytest==8.1.1 \
             pytest-asyncio==0.23.6 \
@@ -108,7 +116,8 @@ jobs:
             aiokafka==0.10.0 \
             loguru==0.7.2 \
             tenacity==8.2.3 \
-            python-dotenv==1.0.0
+            python-dotenv==1.0.0 \
+            psycopg2-binary==2.9.9
 
       - name: Run unit tests (no Docker required)
         run: |
@@ -208,10 +217,27 @@ jobs:
         run: docker compose ps
 
       # ── Initialize PostgreSQL schema ──────────────────────────────────────────
+      # init.sql creates: batch_metrics, anomaly_alerts_pg, component_health,
+      #                   alert_summary, model_metrics
+      # All tables use CREATE TABLE IF NOT EXISTS — safe to re-run.
       - name: Apply PostgreSQL schema
         run: |
           cat docker/postgres/init.sql | \
             docker exec -i postgres-db psql -U aiops_user -d aiops_analytics
+
+      # ── Verify all required tables exist (including model_metrics) ────────────
+      - name: Verify PostgreSQL schema
+        run: |
+          docker exec postgres-db psql -U aiops_user -d aiops_analytics -c "
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public'
+            ORDER BY table_name;
+          "
+          # Assert model_metrics table exists
+          docker exec postgres-db psql -U aiops_user -d aiops_analytics -c "
+            SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_name = 'model_metrics';
+          " | grep -q '1' || (echo 'ERROR: model_metrics table not found!' && exit 1)
 
       # ── Create Kafka topics ───────────────────────────────────────────────────
       - name: Setup Kafka topics
@@ -225,11 +251,34 @@ jobs:
           docker exec spark-master python3 /tmp/init_lakehouse.py
 
       # ── Start Spark ML streaming job ──────────────────────────────────────────
+      # The stream_processor uses an NLP pipeline (TF-IDF + L2 Normalizer → KMeans)
+      # and writes per-batch MLOps metrics to the model_metrics PostgreSQL table.
       - name: Start Spark streaming job
         run: |
           python scripts/submit_spark_job.py --job stream_processor &
-          echo "Spark job submitted. Waiting 15s for it to initialize..."
-          sleep 15
+          echo "Spark job submitted. Waiting 60s for first batch + model training..."
+          sleep 60
+
+      # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
+      - name: Verify model_metrics populated
+        run: |
+          echo "Checking model_metrics table for at least 1 evaluated batch..."
+          COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
+            "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ')
+          echo "model_metrics row count: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written."
+            exit 1
+          fi
+          echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
+          # Print the latest batch metrics for visibility
+          docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
+            "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
+                    round(precision_score::numeric,4) AS precision, \
+                    round(recall_score::numeric,4) AS recall, \
+                    round(f1_score::numeric,4) AS f1, \
+                    true_positives, false_positives, true_negatives, false_negatives \
+             FROM model_metrics ORDER BY evaluated_at DESC LIMIT 3;"
 
       # ── Run the full Pytest suite (preflight + unit + integration) ────────────
       - name: Run full test suite
@@ -265,11 +314,16 @@ jobs:
         if: failure()
         run: |
           mkdir -p ci-logs
-          for svc in kafka-1 kafka-2 kafka-3 fluentd-agent spark-master \
-                     spark-worker minio-oss postgres-db fastapi-server grafana-dashboard; do
+          for svc in kafka-1 kafka-2 kafka-3 fluentd-agent log-generator \
+                     spark-master spark-worker minio-oss postgres-db \
+                     fastapi-server grafana-dashboard; do
             echo "=== $svc ===" >> ci-logs/${svc}.log
             docker logs $svc >> ci-logs/${svc}.log 2>&1 || true
           done
+          # Dump model_metrics table for post-mortem
+          docker exec postgres-db psql -U aiops_user -d aiops_analytics \
+            -c "SELECT * FROM model_metrics ORDER BY evaluated_at DESC LIMIT 20;" \
+            >> ci-logs/model_metrics_dump.log 2>&1 || true
 
       - name: Upload Docker logs
         if: failure()
