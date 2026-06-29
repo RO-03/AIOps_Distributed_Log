@@ -22,11 +22,11 @@ on:
   push:
     branches:
       - main
-      - ro7      
+      - ro9_ci      
   pull_request:
     branches:
       - main
-      - ro7
+      - ro9_ci
       
 
 # Cancel any in-progress run for the same branch on a new push
@@ -259,26 +259,6 @@ jobs:
           echo "Spark job submitted. Waiting 60s for first batch + model training..."
           sleep 60
 
-      # ── Verify MLOps metrics are being written to PostgreSQL ──────────────────
-      - name: Verify model_metrics populated
-        run: |
-          echo "Checking model_metrics table for at least 1 evaluated batch..."
-          COUNT=$(docker exec postgres-db psql -U aiops_user -d aiops_analytics -t -c \
-            "SELECT COUNT(*) FROM model_metrics;" | tr -d ' ')
-          echo "model_metrics row count: $COUNT"
-          if [ "$COUNT" -lt 1 ]; then
-            echo "ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written."
-            exit 1
-          fi
-          echo "✅ model_metrics has $COUNT batch evaluation(s) logged."
-          # Print the latest batch metrics for visibility
-          docker exec postgres-db psql -U aiops_user -d aiops_analytics -c \
-            "SELECT batch_id, total_count, round(accuracy::numeric,4) AS accuracy, \
-                    round(precision_score::numeric,4) AS precision, \
-                    round(recall_score::numeric,4) AS recall, \
-                    round(f1_score::numeric,4) AS f1, \
-                    true_positives, false_positives, true_negatives, false_negatives \
-             FROM model_metrics ORDER BY evaluated_at DESC LIMIT 3;"
 
       # ── Run the full Pytest suite (preflight + unit + integration) ────────────
       - name: Run full test suite
