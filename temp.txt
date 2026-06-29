@@ -73,7 +73,7 @@ Attempt 6/24: model_metrics row count = 0
 
 
 
-existing = "}
+existing = "} 
 ❌ ERROR: No rows found in model_metrics. Spark MLOps metrics are not being written within timeout.
 === spark-master logs ===
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
